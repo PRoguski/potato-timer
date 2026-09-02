@@ -104,6 +104,12 @@
   .settings-footer{display:flex;gap:12px;margin-top:24px}
   .settings-footer button{flex:1}
   #resetBtn{background:var(--panel);border:1px solid var(--line)}
+
+  /* Toggle switch */
+  .toggle-switch{display:flex;align-items:center;gap:12px;cursor:pointer}
+  input[type="checkbox"]{width:44px;height:24px;cursor:pointer;accent-color:var(--work);appearance:none;-webkit-appearance:none;position:relative;border-radius:12px;background:var(--line);border:none;transition:background .3s;flex-shrink:0}
+  input[type="checkbox"]:checked{background:var(--work)}
+  input[type="checkbox"]::-webkit-slider-thumb{display:none}
 </style>
 </head>
 <body>
@@ -158,6 +164,13 @@
         <span class="setting-value" id="restTimeValue">30s</span>
       </div>
       <input type="range" id="restTime" min="15" max="60" value="30" step="5">
+    </div>
+
+    <div class="setting-item">
+      <label class="toggle-switch">
+        <input type="checkbox" id="wakeLockToggle">
+        <span>Nie wyłączaj ekranu podczas treningu</span>
+      </label>
     </div>
 
     <div class="settings-footer">
@@ -285,15 +298,18 @@ function start(){
   beep(988,.12);
   running=true; startBtn.textContent='Pauza'; startBtn.classList.remove('primary');
   tick=setInterval(tickDown,1000);
+  if(settings.wakeLock) requestWakeLock();
 }
 function pause(){
   running=false; startBtn.textContent='Wznów'; startBtn.classList.add('primary');
   clearInterval(tick);
+  releaseWakeLock();
 }
 function toggle(){ running?pause():start(); }
 
 function finish(){
   clearInterval(tick); running=false;
+  releaseWakeLock();
   stage.className='done';
   phaseEl.textContent='Koniec';
   exEl.textContent='Trening zaliczony 🎉';
@@ -328,12 +344,37 @@ plan.forEach(p=>{
   listEl.appendChild(row);
 });
 
+// ===== WAKE LOCK API =====
+let wakeLockSentinel = null;
+
+async function requestWakeLock(){
+  if(!('wakeLock' in navigator)) return; // nie wspierane
+  try{
+    if(!wakeLockSentinel){
+      wakeLockSentinel = await navigator.wakeLock.request('screen');
+    }
+  }catch(e){ console.log('Wake Lock error:', e); }
+}
+
+async function releaseWakeLock(){
+  if(wakeLockSentinel){
+    try{ await wakeLockSentinel.release(); wakeLockSentinel = null; }catch(e){}
+  }
+}
+
+// Obsługa widoczności strony (Wake Lock się zwalnia gdy strona jest niewidoczna)
+document.addEventListener('visibilitychange', async () => {
+  if(document.hidden) await releaseWakeLock();
+  else if(settings.wakeLock && running) await requestWakeLock();
+});
+
 // ===== USTAWIENIA (localStorage) =====
 const defaultSettings = {
   exerciseSize: 100,
   nextSize: 100,
   workTime: 60,
-  restTime: 30
+  restTime: 30,
+  wakeLock: false
 };
 
 let settings = {...defaultSettings};
@@ -447,8 +488,17 @@ resetBtn.onclick = () => {
   updatePlan();
 };
 
+// Wake Lock toggle
+$('wakeLockToggle').onchange = (e) => {
+  settings.wakeLock = e.target.checked;
+  saveSettings();
+  if(running && e.target.checked) requestWakeLock();
+  else if(!e.target.checked) releaseWakeLock();
+};
+
 // Załaduj ustawienia i inicjuj
 loadSettings();
+$('wakeLockToggle').checked = settings.wakeLock;
 updatePlan();
 goto(0);
 </script>
