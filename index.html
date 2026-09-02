@@ -483,6 +483,10 @@ function goto(i){
   total=remaining=steps[idx].t;
   prevBtn.disabled=idx===0;
   render();
+  // Gwizdek na początek każdego ćwiczenia (wysoki ton)
+  if(steps[idx].type==='work'){
+    beep(1046,.12); setTimeout(()=>beep(1046,.12),150);
+  }
   saveWorkoutState();
 }
 
@@ -496,7 +500,12 @@ function tickDown(){
     if(idx>=steps.length-1){ finish(); return; }
     idx++; total=remaining=steps[idx].t;
     prevBtn.disabled=false;
-    beep(steps[idx].type==='rest'?520:988,.18);
+    // Wysoki ton na początek ćwiczenia
+    if(steps[idx].type==='work'){
+      setTimeout(()=>{ beep(1046,.12); setTimeout(()=>beep(1046,.12),150); },100);
+    }else{
+      beep(520,.18);
+    }
   }
   render();
   saveWorkoutState();
