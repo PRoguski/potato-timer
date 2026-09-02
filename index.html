@@ -90,7 +90,13 @@
   .dot.prep{background:var(--prep)} .dot.head{background:transparent}
 
   /* ===== Ustawienia ===== */
-  #settingsBtn{width:50px;height:50px;padding:0;font-size:1.4rem}
+  #settingsBtn{
+    position:fixed;top:env(safe-area-inset-top, 8px);left:8px;z-index:100;
+    width:44px;height:44px;padding:0;font-size:1.2rem;border:none;border-radius:10px;
+    background:var(--panel);color:var(--text);cursor:pointer;
+    transition:transform .08s ease;
+  }
+  #settingsBtn:active{transform:scale(.95)}
   #settingsOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:flex-end}
   #settingsOverlay.open{display:flex}
   #settingsPanel{background:var(--panel);width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:24px;max-height:80dvh;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5)}
@@ -141,11 +147,12 @@
   <div class="next" id="next">Naciśnij „Start", żeby zacząć</div>
 </div>
 
+<button id="settingsBtn">⚙</button>
+
 <div id="controls">
   <button class="secondary" id="prevBtn" disabled>‹ Wstecz</button>
   <button class="primary" id="startBtn">Start</button>
   <button class="secondary" id="nextBtn">Dalej ›</button>
-  <button class="secondary" id="settingsBtn">⚙</button>
 </div>
 
 <div id="remainingTime">
