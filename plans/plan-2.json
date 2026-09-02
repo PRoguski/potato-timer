@@ -1,0 +1,64 @@
+[
+  {
+    "type": "head",
+    "name": "ROZGRZEWKA"
+  },
+  {
+    "type": "prep",
+    "name": "Dynamiczna rozgrzewka",
+    "t": 60
+  },
+  {
+    "type": "head",
+    "name": "TABATA (4 rundy)"
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 20
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 10
+  },
+  {
+    "type": "work",
+    "name": "Pompki",
+    "t": 20
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 10
+  },
+  {
+    "type": "work",
+    "name": "Przysiad",
+    "t": 20
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 10
+  },
+  {
+    "type": "work",
+    "name": "Burpee",
+    "t": 20
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 10
+  },
+  {
+    "type": "head",
+    "name": "SCHŁODZENIE"
+  },
+  {
+    "type": "prep",
+    "name": "Rozciąganie",
+    "t": 60
+  }
+]
