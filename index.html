@@ -198,9 +198,26 @@
 </details>
 
 <script>
+// Ładuj plan z zewnętrznego pliku JSON
+let plan = [];
+
+async function loadPlanFromFile(){
+  try{
+    const response = await fetch('plans/default-plan.json');
+    plan = await response.json();
+  }catch(e){
+    console.error('Błąd ładowania planu:', e);
+    // Fallback - zawsze coś
+    plan = [{type:'head', name:'BŁĄD'}, {type:'prep', name:'Nie można załadować planu', t:60}];
+  }
+  // Inicjuj aplikację po załadowaniu planu
+  initApp();
+}
+
+/* Plan załadowywany z pliku (plans/default-plan.json)
 // type: prep (rozgrzewka/schłodzenie), work (ćwiczenie), rest (przerwa), head (nagłówek – bez czasu)
-const S = 30; // przerwa w sekundach
-const plan = [
+// const S = 30; // przerwa w sekundach
+// const plan = [
   {type:'head', name:'ROZGRZEWKA'},
   {type:'prep', name:'Skakanka spokojnie', t:120},
   {type:'prep', name:'Krążenia ramion, bioder, przysiady', t:180},
@@ -240,18 +257,40 @@ const plan = [
   {type:'head', name:'SCHŁODZENIE'},
   {type:'prep', name:'Rozciąganie: klatka, barki, uda, łydki', t:300},
 ];
+*/
 
-// tylko kroki z czasem biorą udział w odliczaniu
-const steps = plan.filter(p => p.type !== 'head');
+// Globalne zmienne
+let steps = [];
 const phaseLabel = {work:'Ćwiczenie', rest:'Przerwa', prep:'Rozgrzewka'};
-
 const $ = id => document.getElementById(id);
-const stage=$('stage'), phaseEl=$('phase'), exEl=$('exercise'),
-      clockEl=$('clock'), nextEl=$('next'), barEl=$('bar'),
-      counterEl=$('counter'), startBtn=$('startBtn'),
-      prevBtn=$('prevBtn'), nextBtn=$('nextBtn');
 
-let idx=0, remaining=steps[0].t, total=steps[0].t, tick=null, running=false;
+// DOM elements - inicjalizowane w initApp
+let stage, phaseEl, exEl, clockEl, nextEl, barEl, counterEl, startBtn, prevBtn, nextBtn;
+let idx=0, remaining=0, total=0, tick=null, running=false;
+
+function initApp(){
+  // Tylko kroki z czasem biorą udział w odliczaniu
+  steps = plan.filter(p => p.type !== 'head');
+
+  // Inicjuj DOM elements
+  stage=$('stage'); phaseEl=$('phase'); exEl=$('exercise');
+  clockEl=$('clock'); nextEl=$('next'); barEl=$('bar');
+  counterEl=$('counter'); startBtn=$('startBtn');
+  prevBtn=$('prevBtn'); nextBtn=$('nextBtn');
+
+  // Zainicjuj zmienne
+  idx=0;
+  remaining=steps[0].t;
+  total=steps[0].t;
+
+  // Reszta inicjalizacji
+  setupEventListeners();
+  buildPlanList();
+  loadSettings();
+  $('wakeLockToggle').checked = settings.wakeLock;
+  updatePlan();
+  goto(0);
+}
 
 function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
 
@@ -347,28 +386,33 @@ function finish(){
   beep(1319,.3);
 }
 
-startBtn.onclick=toggle;
-prevBtn.onclick=()=>{ if(remaining<steps[idx].t-1){goto(idx);}else{goto(idx-1);} };
-nextBtn.onclick=()=>{ if(idx<steps.length-1){goto(idx+1);}else{finish();} };
+function setupEventListeners(){
+  startBtn.onclick=toggle;
+  prevBtn.onclick=()=>{ if(remaining<steps[idx].t-1){goto(idx);}else{goto(idx-1);} };
+  nextBtn.onclick=()=>{ if(idx<steps.length-1){goto(idx+1);}else{finish();} };
+}
 
 // budowa listy planu
-const listEl=$('planList');
-let stepPtr=0;
-plan.forEach(p=>{
-  const row=document.createElement('div');
-  if(p.type==='head'){
-    row.className='row head';
-    row.innerHTML='<span class="dot head"></span><span class="idx"></span>'+
-      '<span class="name">'+p.name+'</span><span class="dur"></span>';
-  }else{
-    const si=stepPtr++;
-    row.className='row'; row.dataset.step=si;
-    row.innerHTML='<span class="dot '+p.type+'"></span><span class="idx">'+(si+1)+'</span>'+
-      '<span class="name">'+p.name+'</span><span class="dur">'+fmt(p.t)+'</span>';
-    row.onclick=()=>{ pause(); goto(si); };
-  }
-  listEl.appendChild(row);
-});
+function buildPlanList(){
+  const listEl=$('planList');
+  listEl.innerHTML = ''; // wyczyść starą listę
+  let stepPtr=0;
+  plan.forEach(p=>{
+    const row=document.createElement('div');
+    if(p.type==='head'){
+      row.className='row head';
+      row.innerHTML='<span class="dot head"></span><span class="idx"></span>'+
+        '<span class="name">'+p.name+'</span><span class="dur"></span>';
+    }else{
+      const si=stepPtr++;
+      row.className='row'; row.dataset.step=si;
+      row.innerHTML='<span class="dot '+p.type+'"></span><span class="idx">'+(si+1)+'</span>'+
+        '<span class="name">'+p.name+'</span><span class="dur">'+fmt(p.t)+'</span>';
+      row.onclick=()=>{ pause(); goto(si); };
+    }
+    listEl.appendChild(row);
+  });
+}
 
 // ===== WAKE LOCK API =====
 let wakeLockSentinel = null;
@@ -522,11 +566,8 @@ $('wakeLockToggle').onchange = (e) => {
   else if(!e.target.checked) releaseWakeLock();
 };
 
-// Załaduj ustawienia i inicjuj
-loadSettings();
-$('wakeLockToggle').checked = settings.wakeLock;
-updatePlan();
-goto(0);
+// Załaduj plan z pliku JSON i inicjuj aplikację
+loadPlanFromFile();
 </script>
 </body>
 </html>
