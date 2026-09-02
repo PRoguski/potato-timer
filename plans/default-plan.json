@@ -1,0 +1,281 @@
+[
+  {
+    "type": "head",
+    "name": "ROZGRZEWKA"
+  },
+  {
+    "type": "prep",
+    "name": "Skakanka spokojnie",
+    "t": 120
+  },
+  {
+    "type": "prep",
+    "name": "Krążenia ramion, bioder, przysiady",
+    "t": 180
+  },
+  {
+    "type": "head",
+    "name": "RUNDA 1"
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Pompki na podporach",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Rozpiętki z gumą",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Przysiad z gumą",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "head",
+    "name": "RUNDA 2"
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Pompki wąskie (triceps)",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Wiosłowanie gumą",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Wykroki",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "head",
+    "name": "RUNDA 3"
+  },
+  {
+    "type": "work",
+    "name": "Skakanka (sprint/wolno)",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Pompki wolne, głębokie",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Uginanie ramion (biceps)",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Martwy ciąg z gumą",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "head",
+    "name": "RUNDA 4"
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Pompki diamentowe",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Odwodzenie ramion (barki)",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "work",
+    "name": "Plank na podporach",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "head",
+    "name": "SCHŁODZENIE"
+  },
+  {
+    "type": "prep",
+    "name": "Rozciąganie: klatka, barki, uda, łydki",
+    "t": 300
+  }
+]
