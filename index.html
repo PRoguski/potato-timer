@@ -118,6 +118,16 @@
     letter-spacing:.05em;
   }
   #remainingTime .time{color:var(--work);font-size:1.2rem;font-weight:800}
+
+  /* Selektor planu */
+  #planSelector{
+    padding:12px 16px;background:var(--panel);border-top:1px solid var(--line);
+    font-size:.85rem;
+    display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;
+  }
+  #planSelector label{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--muted)}
+  #planSelector input[type="radio"]{cursor:pointer;accent-color:var(--work)}
+  #planSelector .plan-info{font-size:.8rem;color:var(--muted);opacity:.8}
 </style>
 </head>
 <body>
@@ -140,6 +150,10 @@
 
 <div id="remainingTime">
   Pozostało: <span class="time" id="remainingTimeValue">00:00</span>
+</div>
+
+<div id="planSelector">
+  <!-- Opcje planów będą wstawiane dynamicznie -->
 </div>
 
 <div id="settingsOverlay">
@@ -200,17 +214,76 @@
 <script>
 // Ładuj plan z zewnętrznego pliku JSON
 let plan = [];
+let availablePlans = [];
+let currentPlanIndex = 0;
 
-async function loadPlanFromFile(){
+const planNames = {
+  'plan-0': '60 min - Standardowy',
+  'plan-1': '30 min - Średni',
+  'plan-2': '20 min - Tabata'
+};
+
+async function detectAvailablePlans(){
+  availablePlans = [];
+  // Spróbuj załadować plan-0, plan-1, plan-2, itd.
+  for(let i = 0; i < 10; i++){
+    try{
+      const response = await fetch(`plans/plan-${i}.json`);
+      if(response.ok){
+        availablePlans.push(`plan-${i}`);
+      }
+    }catch(e){}
+  }
+  return availablePlans.length > 0;
+}
+
+async function loadPlanFromFile(planName){
   try{
-    const response = await fetch('plans/default-plan.json');
+    const response = await fetch(`plans/${planName}.json`);
+    if(!response.ok) throw new Error('Plan not found');
     plan = await response.json();
+    currentPlanIndex = availablePlans.indexOf(planName);
   }catch(e){
     console.error('Błąd ładowania planu:', e);
-    // Fallback - zawsze coś
     plan = [{type:'head', name:'BŁĄD'}, {type:'prep', name:'Nie można załadować planu', t:60}];
   }
-  // Inicjuj aplikację po załadowaniu planu
+}
+
+async function initializePlanSelector(){
+  // Wykryj dostępne plany
+  const hasPlans = await detectAvailablePlans();
+  if(!hasPlans){
+    console.error('Brak dostępnych planów');
+    availablePlans = ['plan-0'];
+  }
+
+  // Wczytaj wybrany plan z localStorage
+  let savedPlan = localStorage.getItem('selectedPlan') || availablePlans[0];
+  if(!availablePlans.includes(savedPlan)){
+    savedPlan = availablePlans[0];
+  }
+
+  // Załaduj plan
+  await loadPlanFromFile(savedPlan);
+
+  // Utwórz UI selektora
+  const selector = document.getElementById('planSelector');
+  selector.innerHTML = '';
+  availablePlans.forEach((planName, idx) => {
+    const label = document.createElement('label');
+    label.innerHTML = `<input type="radio" name="plan" value="${planName}" ${planName === savedPlan ? 'checked' : ''}>
+      <span>${planNames[planName] || planName}</span>`;
+    label.onchange = async (e) => {
+      if(e.target.checked){
+        localStorage.setItem('selectedPlan', planName);
+        await loadPlanFromFile(planName);
+        if(window.initApp) initApp();
+      }
+    };
+    selector.appendChild(label);
+  });
+
+  // Inicjuj aplikację
   initApp();
 }
 
@@ -496,8 +569,9 @@ function updatePlan(){
     if(p.type === 'rest') p.t = S;
   });
   // Przebuduj listę
+  const listEl = $('planList');
   listEl.innerHTML = '';
-  stepPtr = 0;
+  let stepPtr = 0;
   plan.forEach(p=>{
     const row=document.createElement('div');
     if(p.type==='head'){
@@ -567,7 +641,7 @@ $('wakeLockToggle').onchange = (e) => {
 };
 
 // Załaduj plan z pliku JSON i inicjuj aplikację
-loadPlanFromFile();
+initializePlanSelector();
 </script>
 </body>
 </html>

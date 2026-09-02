@@ -1,0 +1,69 @@
+[
+  {
+    "type": "head",
+    "name": "ROZGRZEWKA"
+  },
+  {
+    "type": "prep",
+    "name": "Skakanka spokojnie",
+    "t": 60
+  },
+  {
+    "type": "prep",
+    "name": "Krążenia ramion",
+    "t": 60
+  },
+  {
+    "type": "head",
+    "name": "RUNDA 1"
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 45
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 20
+  },
+  {
+    "type": "work",
+    "name": "Pompki",
+    "t": 45
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 20
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 45
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 20
+  },
+  {
+    "type": "work",
+    "name": "Przysiad",
+    "t": 45
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 20
+  },
+  {
+    "type": "head",
+    "name": "SCHŁODZENIE"
+  },
+  {
+    "type": "prep",
+    "name": "Rozciąganie",
+    "t": 120
+  }
+]
