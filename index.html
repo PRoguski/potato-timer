@@ -38,15 +38,6 @@
   #stage.done{background:var(--panel);color:var(--text)}
 
   .phase{font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;opacity:.72}
-
-  #exerciseImage{
-    max-width:min(280px, 80vw);max-height:200px;object-fit:contain;
-    margin:16px 0 8px;border-radius:12px;display:none;
-    background:rgba(0,0,0,.2);padding:8px;animation:fadeIn .4s ease;
-  }
-  #exerciseImage.visible{display:block}
-  @keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-
   .exercise{
     font-size:clamp(2rem,9vw,3.2rem);font-weight:800;line-height:1.1;
     margin:.35em 0 0;max-width:11ch;
@@ -64,6 +55,21 @@
     width:0;transition:width .25s linear;
   }
   .counter{position:absolute;top:14px;right:18px;font-size:.8rem;font-weight:700;opacity:.6}
+
+  /* ===== Sterowanie ===== */
+  #controls{
+    display:flex;gap:12px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+    background:var(--bg);border-top:1px solid var(--line);
+  }
+  button{
+    flex:1;border:0;border-radius:14px;padding:18px 12px;font-size:1.05rem;font-weight:800;
+    font-family:inherit;color:var(--text);background:var(--panel);cursor:pointer;
+    transition:transform .08s ease,filter .15s ease;
+  }
+  button:active{transform:scale(.97)}
+  button.primary{background:var(--work);color:var(--work-ink)}
+  button.secondary{background:var(--panel);border:1px solid var(--line)}
+  button:disabled{opacity:.4;cursor:default}
 
   /* ===== Lista planu ===== */
   details{background:var(--bg);border-top:1px solid var(--line)}
@@ -83,41 +89,8 @@
   .dot.work{background:var(--work)} .dot.rest{background:var(--rest)}
   .dot.prep{background:var(--prep)} .dot.head{background:transparent}
 
-  /* ===== Dialog wznowienia treningu ===== */
-  #resumeOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:2000;justify-content:center;align-items:center}
-  #resumeOverlay.open{display:flex}
-  #resumePanel{background:var(--panel);border-radius:20px;padding:32px;max-width:400px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)}
-  #resumePanel h2{margin:0 0 16px;font-size:1.4rem;color:var(--text)}
-  #resumePanel p{margin:0 0 24px;color:var(--muted);font-size:.95rem;line-height:1.5}
-  #resumePanel .resume-details{background:var(--bg);padding:16px;border-radius:12px;margin-bottom:24px;color:var(--work);font-weight:700}
-  #resumeButtons{display:flex;gap:12px}
-  #resumeButtons button{flex:1;padding:14px 20px;border:0;border-radius:12px;font-weight:700;cursor:pointer;transition:.2s}
-  #resumeButtons .resume-btn{background:var(--work);color:var(--work-ink)}
-  #resumeButtons .new-btn{background:var(--panel);border:1px solid var(--line);color:var(--text)}
-
-  /* ===== Sterowanie ===== */
-  #controls{
-    display:flex;gap:12px;padding:8px 12px calc(12px + env(safe-area-inset-bottom));
-    background:var(--bg);border-top:none;
-  }
-  button{
-    flex:1;border:none;border-radius:12px;padding:14px 10px;font-size:1rem;font-weight:800;
-    font-family:inherit;color:var(--text);background:var(--panel);cursor:pointer;
-    transition:transform .08s ease,filter .15s ease;
-  }
-  button:active{transform:scale(.97)}
-  button.primary{background:var(--work);color:var(--work-ink)}
-  button.secondary{background:var(--panel);border:none}
-  button:disabled{opacity:.4;cursor:default}
-
-  /* ===== Ustawienia - górny lewy róg ===== */
-  #settingsBtn{
-    position:fixed;top:env(safe-area-inset-top, 8px);left:8px;z-index:100;
-    width:44px;height:44px;padding:0;font-size:1.2rem;border:none;border-radius:10px;
-    background:var(--panel);color:var(--text);cursor:pointer;
-    transition:transform .08s ease;
-  }
-  #settingsBtn:active{transform:scale(.95)}
+  /* ===== Ustawienia ===== */
+  #settingsBtn{width:50px;height:50px;padding:0;font-size:1.4rem}
   #settingsOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:flex-end}
   #settingsOverlay.open{display:flex}
   #settingsPanel{background:var(--panel);width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:24px;max-height:80dvh;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5)}
@@ -163,18 +136,16 @@
   <div class="progress" id="bar"></div>
   <div class="counter" id="counter"></div>
   <div class="phase" id="phase">Gotowy?</div>
-  <img id="exerciseImage" alt="Ćwiczenie">
   <div class="exercise" id="exercise">Trening interwałowy</div>
   <div class="clock" id="clock">00:00</div>
   <div class="next" id="next">Naciśnij „Start", żeby zacząć</div>
 </div>
 
-<button class="secondary" id="settingsBtn">⚙</button>
-
 <div id="controls">
   <button class="secondary" id="prevBtn" disabled>‹ Wstecz</button>
   <button class="primary" id="startBtn">Start</button>
   <button class="secondary" id="nextBtn">Dalej ›</button>
+  <button class="secondary" id="settingsBtn">⚙</button>
 </div>
 
 <div id="remainingTime">
@@ -183,18 +154,6 @@
 
 <div id="planSelector">
   <!-- Opcje planów będą wstawiane dynamicznie -->
-</div>
-
-<div id="resumeOverlay">
-  <div id="resumePanel">
-    <h2>Wznowić trening?</h2>
-    <p>Znaleźliśmy zapisany trening. Chcesz kontynuować gdzie skończyłeś?</p>
-    <div class="resume-details" id="resumeDetails"></div>
-    <div id="resumeButtons">
-      <button class="resume-btn" id="resumeBtn">Wznów</button>
-      <button class="new-btn" id="newBtn">Nowy trening</button>
-    </div>
-  </div>
 </div>
 
 <div id="settingsOverlay">
@@ -234,16 +193,17 @@
     </div>
 
     <div class="setting-item">
-      <label class="toggle-switch">
-        <input type="checkbox" id="wakeLockToggle">
-        <span>Nie wyłączaj ekranu podczas treningu</span>
-      </label>
+      <div class="setting-label">
+        <span>Czas przygotowania (sekundy)</span>
+        <span class="setting-value" id="prepTimeValue">15s</span>
+      </div>
+      <input type="range" id="prepTime" min="5" max="30" value="15" step="5">
     </div>
 
     <div class="setting-item">
       <label class="toggle-switch">
-        <input type="checkbox" id="tapNavToggle">
-        <span>Navigacja dotykiem na timerze (ukryj przyciski)</span>
+        <input type="checkbox" id="wakeLockToggle">
+        <span>Nie wyłączaj ekranu podczas treningu</span>
       </label>
     </div>
 
@@ -262,6 +222,7 @@
 <script>
 // Ładuj plan z zewnętrznego pliku JSON
 let plan = [];
+let basePlan = []; // Oryginalny plan bez kroków przygotowania
 let availablePlans = [];
 let currentPlanIndex = 0;
 
@@ -290,10 +251,13 @@ async function loadPlanFromFile(planName){
     const response = await fetch(`plans/${planName}.json`);
     if(!response.ok) throw new Error('Plan not found');
     plan = await response.json();
+    // Zapisz oryginalny plan bez kroków przygotowania
+    basePlan = JSON.parse(JSON.stringify(plan));
     currentPlanIndex = availablePlans.indexOf(planName);
   }catch(e){
     console.error('Błąd ładowania planu:', e);
     plan = [{type:'head', name:'BŁĄD'}, {type:'prep', name:'Nie można załadować planu', t:60}];
+    basePlan = JSON.parse(JSON.stringify(plan));
   }
 }
 
@@ -324,7 +288,6 @@ async function initializePlanSelector(){
     label.onchange = async (e) => {
       if(e.target.checked){
         localStorage.setItem('selectedPlan', planName);
-        clearWorkoutState();
         await loadPlanFromFile(planName);
         if(window.initApp) initApp();
       }
@@ -411,22 +374,7 @@ function initApp(){
   loadSettings();
   $('wakeLockToggle').checked = settings.wakeLock;
   updatePlan();
-
-  // Sprawdź czy jest zapisany stan treningu
-  const savedState = loadWorkoutState();
-  if(savedState){
-    // Sprawdź czy plan się zgadza
-    if(savedState.selectedPlan === (localStorage.getItem('selectedPlan') || 'plan-0')){
-      // Pokaż dialog z pytaniem o wznowienie
-      showResumeDialog(savedState);
-    }else{
-      // Plan się zmienił, usuń zapisany stan
-      clearWorkoutState();
-      goto(0);
-    }
-  }else{
-    goto(0);
-  }
+  goto(0);
 }
 
 function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
@@ -464,18 +412,6 @@ function render(){
   nextEl.innerHTML = nxt ? 'Następnie: <b>'+nxt.name+'</b>' : 'To ostatni element 💪';
   barEl.style.width = (100*(total-remaining)/total)+'%';
 
-  // Wyświetl obraz ćwiczenia jeśli istnieje
-  const img = document.getElementById('exerciseImage');
-  if(step.image){
-    img.src = step.image;
-    img.alt = step.name;
-    img.classList.add('visible');
-  }else{
-    img.src = '';
-    img.alt = '';
-    img.classList.remove('visible');
-  }
-
   // Pozostały czas całego treningu
   const remainingTotal = calcRemainingTime();
   document.getElementById('remainingTimeValue').textContent = fmt(remainingTotal);
@@ -490,11 +426,6 @@ function goto(i){
   total=remaining=steps[idx].t;
   prevBtn.disabled=idx===0;
   render();
-  // Gwizdek na początek każdego ćwiczenia (wysoki ton)
-  if(steps[idx].type==='work'){
-    beep(1046,.12); setTimeout(()=>beep(1046,.12),150);
-  }
-  saveWorkoutState();
 }
 
 function tickDown(){
@@ -507,15 +438,9 @@ function tickDown(){
     if(idx>=steps.length-1){ finish(); return; }
     idx++; total=remaining=steps[idx].t;
     prevBtn.disabled=false;
-    // Wysoki ton na początek ćwiczenia
-    if(steps[idx].type==='work'){
-      setTimeout(()=>{ beep(1046,.12); setTimeout(()=>beep(1046,.12),150); },100);
-    }else{
-      beep(520,.18);
-    }
+    beep(steps[idx].type==='rest'?520:988,.18);
   }
   render();
-  saveWorkoutState();
 }
 
 function start(){
@@ -524,20 +449,17 @@ function start(){
   running=true; startBtn.textContent='Pauza'; startBtn.classList.remove('primary');
   tick=setInterval(tickDown,1000);
   if(settings.wakeLock) requestWakeLock();
-  saveWorkoutState();
 }
 function pause(){
   running=false; startBtn.textContent='Wznów'; startBtn.classList.add('primary');
   clearInterval(tick);
   releaseWakeLock();
-  saveWorkoutState();
 }
 function toggle(){ running?pause():start(); }
 
 function finish(){
   clearInterval(tick); running=false;
   releaseWakeLock();
-  clearWorkoutState();
   stage.className='done';
   phaseEl.textContent='Koniec';
   exEl.textContent='Trening zaliczony 🎉';
@@ -545,7 +467,7 @@ function finish(){
   nextEl.textContent='Świetna robota. Rozciągnij się i napij wody.';
   barEl.style.width='100%';
   startBtn.textContent='Od nowa'; startBtn.classList.add('primary');
-  startBtn.onclick=()=>{ startBtn.onclick=toggle; clearWorkoutState(); goto(0); };
+  startBtn.onclick=()=>{ startBtn.onclick=toggle; goto(0); };
   beep(1319,.3);
 }
 
@@ -553,26 +475,6 @@ function setupEventListeners(){
   startBtn.onclick=toggle;
   prevBtn.onclick=()=>{ if(remaining<steps[idx].t-1){goto(idx);}else{goto(idx-1);} };
   nextBtn.onclick=()=>{ if(idx<steps.length-1){goto(idx+1);}else{finish();} };
-
-  // Tap navigation na timerze
-  stage.onclick = (e) => {
-    if(!settings.tapNavigation) return;
-    const rect = stage.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const width = rect.width;
-    const thirdWidth = width / 3;
-
-    if(x < thirdWidth){
-      // Lewa strona - poprzedni
-      if(remaining<steps[idx].t-1){goto(idx);}else{goto(idx-1);}
-    }else if(x > width - thirdWidth){
-      // Prawa strona - następny
-      if(idx<steps.length-1){goto(idx+1);}else{finish();}
-    }else{
-      // Środek - start/stop
-      toggle();
-    }
-  };
 }
 
 // budowa listy planu
@@ -627,6 +529,7 @@ const defaultSettings = {
   nextSize: 100,
   workTime: 60,
   restTime: 30,
+  prepTime: 15,
   wakeLock: false,
   tapNavigation: false
 };
@@ -658,12 +561,14 @@ function applySettings(){
   $('nextSize').value = settings.nextSize;
   $('workTime').value = settings.workTime;
   $('restTime').value = settings.restTime;
+  $('prepTime').value = settings.prepTime;
 
   // Zaktualizuj wyświetlane wartości
   $('exerciseSizeValue').textContent = settings.exerciseSize + '%';
   $('nextSizeValue').textContent = settings.nextSize + '%';
   $('workTimeValue').textContent = settings.workTime + 's';
   $('restTimeValue').textContent = settings.restTime + 's';
+  $('prepTimeValue').textContent = settings.prepTime + 's';
 
   // Zastosuj tap navigation toggle
   const controls = $('controls');
@@ -685,13 +590,49 @@ function resetSettings(){
   applySettings();
 }
 
+// Buduj plan z dynamicznym czasem przygotowania
+function buildPlan(source = basePlan){
+  const newPlan = [];
+  for(let i = 0; i < source.length; i++){
+    newPlan.push(source[i]);
+
+    // Dodaj przygotowanie po przerwie, ale nie przed schłodzeniem
+    if(source[i].type === 'rest'){
+      // Szukaj następnego nagłówka sekcji
+      let nextSectionIdx = i + 1;
+      while(nextSectionIdx < source.length && source[nextSectionIdx].type !== 'head'){
+        nextSectionIdx++;
+      }
+
+      // Jeśli następna sekcja istnieje i NIE jest schłodzeniem, dodaj przygotowanie
+      if(nextSectionIdx < source.length && source[nextSectionIdx].name !== 'SCHŁODZENIE'){
+        newPlan.push({
+          type: 'prep',
+          name: 'Czas na przygotowanie sprzętu/pozycji',
+          t: settings.prepTime
+        });
+      }
+    }
+  }
+  return newPlan;
+}
+
 function updatePlan(){
+  // Przebuduj plan z dynamicznym czasem przygotowania na podstawie basePlan
+  plan = buildPlan(basePlan);
+
   // Zaktualizuj plan z nowymi czasami
   const S = settings.restTime;
   plan.forEach(p => {
     if(p.type === 'work') p.t = settings.workTime;
     if(p.type === 'rest') p.t = S;
+    // prepTime is already set in buildPlan(), ale możemy go zaktualizować w każdej iteracji
+    if(p.type === 'prep' && p.name === 'Czas na przygotowanie sprzętu/pozycji') p.t = settings.prepTime;
   });
+
+  // Aktualizuj steps array z nowym planem
+  steps = plan.filter(p => p.type !== 'head');
+
   // Przebuduj listę
   const listEl = $('planList');
   listEl.innerHTML = '';
@@ -751,6 +692,14 @@ $('restTime').oninput = (e) => {
   saveSettings();
 };
 
+$('prepTime').oninput = (e) => {
+  settings.prepTime = parseInt(e.target.value);
+  $('prepTimeValue').textContent = settings.prepTime + 's';
+  clearWorkoutState();
+  updatePlan();
+  saveSettings();
+};
+
 resetBtn.onclick = () => {
   resetSettings();
   updatePlan();
@@ -763,67 +712,6 @@ $('wakeLockToggle').onchange = (e) => {
   if(running && e.target.checked) requestWakeLock();
   else if(!e.target.checked) releaseWakeLock();
 };
-
-// Tap Navigation toggle
-$('tapNavToggle').onchange = (e) => {
-  settings.tapNavigation = e.target.checked;
-  saveSettings();
-  applySettings();
-};
-
-// ===== WORKOUT STATE PERSISTENCE =====
-function saveWorkoutState(){
-  if(idx >= steps.length) return; // nie zapisuj gdy trening jest skończony
-  try{
-    const state = {
-      selectedPlan: localStorage.getItem('selectedPlan') || 'plan-0',
-      idx: idx,
-      remaining: remaining,
-      total: total,
-      running: running
-    };
-    localStorage.setItem('workoutState', JSON.stringify(state));
-  }catch(e){}
-}
-
-function loadWorkoutState(){
-  try{
-    const saved = localStorage.getItem('workoutState');
-    if(saved){
-      const state = JSON.parse(saved);
-      return state;
-    }
-  }catch(e){}
-  return null;
-}
-
-function clearWorkoutState(){
-  try{ localStorage.removeItem('workoutState'); }catch(e){}
-}
-
-function showResumeDialog(savedState){
-  const details = $('resumeDetails');
-  const exerciseName = steps[savedState.idx].name;
-  const timeLeft = fmt(savedState.remaining);
-  details.textContent = exerciseName + ' — ' + timeLeft + ' pozostało';
-
-  $('resumeOverlay').classList.add('open');
-
-  $('resumeBtn').onclick = () => {
-    $('resumeOverlay').classList.remove('open');
-    idx = savedState.idx;
-    remaining = savedState.remaining;
-    total = savedState.total;
-    render();
-    // Nie startuj automatycznie, czekaj na naciśnięcie Start
-  };
-
-  $('newBtn').onclick = () => {
-    clearWorkoutState();
-    $('resumeOverlay').classList.remove('open');
-    goto(0);
-  };
-}
 
 // Załaduj plan z pliku JSON i inicjuj aplikację
 initializePlanSelector();
