@@ -13,7 +13,7 @@
     "type": "prep",
     "name": "Krążenia ramion, bioder, przysiady",
     "t": 180,
-    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
+    "image": "https://media.giphy.com/media/3o7TKlzw8S5UNnvdoI/giphy.gif"
   },
   {
     "type": "head",
@@ -244,7 +244,7 @@
     "type": "work",
     "name": "Pompki diamentowe",
     "t": 60,
-    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
+    "image": "https://media.giphy.com/media/3o7TKDTwBJVmn9WcEo/giphy.gif"
   },
   {
     "type": "rest",
@@ -303,6 +303,6 @@
     "type": "prep",
     "name": "Rozciąganie: klatka, barki, uda, łydki",
     "t": 300,
-    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
+    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
   }
 ]
