@@ -193,6 +193,14 @@
     </div>
 
     <div class="setting-item">
+      <div class="setting-label">
+        <span>Czas przygotowania (sekundy)</span>
+        <span class="setting-value" id="prepTimeValue">15s</span>
+      </div>
+      <input type="range" id="prepTime" min="5" max="30" value="15" step="5">
+    </div>
+
+    <div class="setting-item">
       <label class="toggle-switch">
         <input type="checkbox" id="wakeLockToggle">
         <span>Nie wyłączaj ekranu podczas treningu</span>
@@ -214,6 +222,7 @@
 <script>
 // Ładuj plan z zewnętrznego pliku JSON
 let plan = [];
+let basePlan = []; // Oryginalny plan bez kroków przygotowania
 let availablePlans = [];
 let currentPlanIndex = 0;
 
@@ -242,10 +251,13 @@ async function loadPlanFromFile(planName){
     const response = await fetch(`plans/${planName}.json`);
     if(!response.ok) throw new Error('Plan not found');
     plan = await response.json();
+    // Zapisz oryginalny plan bez kroków przygotowania
+    basePlan = JSON.parse(JSON.stringify(plan));
     currentPlanIndex = availablePlans.indexOf(planName);
   }catch(e){
     console.error('Błąd ładowania planu:', e);
     plan = [{type:'head', name:'BŁĄD'}, {type:'prep', name:'Nie można załadować planu', t:60}];
+    basePlan = JSON.parse(JSON.stringify(plan));
   }
 }
 
@@ -517,7 +529,9 @@ const defaultSettings = {
   nextSize: 100,
   workTime: 60,
   restTime: 30,
-  wakeLock: false
+  prepTime: 15,
+  wakeLock: false,
+  tapNavigation: false
 };
 
 let settings = {...defaultSettings};
@@ -547,12 +561,27 @@ function applySettings(){
   $('nextSize').value = settings.nextSize;
   $('workTime').value = settings.workTime;
   $('restTime').value = settings.restTime;
+  $('prepTime').value = settings.prepTime;
 
   // Zaktualizuj wyświetlane wartości
   $('exerciseSizeValue').textContent = settings.exerciseSize + '%';
   $('nextSizeValue').textContent = settings.nextSize + '%';
   $('workTimeValue').textContent = settings.workTime + 's';
   $('restTimeValue').textContent = settings.restTime + 's';
+  $('prepTimeValue').textContent = settings.prepTime + 's';
+
+  // Zastosuj tap navigation toggle
+  const controls = $('controls');
+  if(settings.tapNavigation){
+    controls.style.display = 'none';
+    stage.style.cursor = 'pointer';
+  }else{
+    controls.style.display = 'flex';
+    stage.style.cursor = 'default';
+  }
+
+  // Zaktualizuj checkbox
+  $('tapNavToggle').checked = settings.tapNavigation;
 }
 
 function resetSettings(){
@@ -561,13 +590,49 @@ function resetSettings(){
   applySettings();
 }
 
+// Buduj plan z dynamicznym czasem przygotowania
+function buildPlan(source = basePlan){
+  const newPlan = [];
+  for(let i = 0; i < source.length; i++){
+    newPlan.push(source[i]);
+
+    // Dodaj przygotowanie po przerwie, ale nie przed schłodzeniem
+    if(source[i].type === 'rest'){
+      // Szukaj następnego nagłówka sekcji
+      let nextSectionIdx = i + 1;
+      while(nextSectionIdx < source.length && source[nextSectionIdx].type !== 'head'){
+        nextSectionIdx++;
+      }
+
+      // Jeśli następna sekcja istnieje i NIE jest schłodzeniem, dodaj przygotowanie
+      if(nextSectionIdx < source.length && source[nextSectionIdx].name !== 'SCHŁODZENIE'){
+        newPlan.push({
+          type: 'prep',
+          name: 'Czas na przygotowanie sprzętu/pozycji',
+          t: settings.prepTime
+        });
+      }
+    }
+  }
+  return newPlan;
+}
+
 function updatePlan(){
+  // Przebuduj plan z dynamicznym czasem przygotowania na podstawie basePlan
+  plan = buildPlan(basePlan);
+
   // Zaktualizuj plan z nowymi czasami
   const S = settings.restTime;
   plan.forEach(p => {
     if(p.type === 'work') p.t = settings.workTime;
     if(p.type === 'rest') p.t = S;
+    // prepTime is already set in buildPlan(), ale możemy go zaktualizować w każdej iteracji
+    if(p.type === 'prep' && p.name === 'Czas na przygotowanie sprzętu/pozycji') p.t = settings.prepTime;
   });
+
+  // Aktualizuj steps array z nowym planem
+  steps = plan.filter(p => p.type !== 'head');
+
   // Przebuduj listę
   const listEl = $('planList');
   listEl.innerHTML = '';
@@ -623,6 +688,14 @@ $('workTime').oninput = (e) => {
 $('restTime').oninput = (e) => {
   settings.restTime = parseInt(e.target.value);
   $('restTimeValue').textContent = settings.restTime + 's';
+  updatePlan();
+  saveSettings();
+};
+
+$('prepTime').oninput = (e) => {
+  settings.prepTime = parseInt(e.target.value);
+  $('prepTimeValue').textContent = settings.prepTime + 's';
+  clearWorkoutState();
   updatePlan();
   saveSettings();
 };
