@@ -89,6 +89,18 @@
   .dot.work{background:var(--work)} .dot.rest{background:var(--rest)}
   .dot.prep{background:var(--prep)} .dot.head{background:transparent}
 
+  /* ===== Dialog wznowienia treningu ===== */
+  #resumeOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:2000;justify-content:center;align-items:center}
+  #resumeOverlay.open{display:flex}
+  #resumePanel{background:var(--panel);border-radius:20px;padding:32px;max-width:400px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+  #resumePanel h2{margin:0 0 16px;font-size:1.4rem;color:var(--text)}
+  #resumePanel p{margin:0 0 24px;color:var(--muted);font-size:.95rem;line-height:1.5}
+  #resumePanel .resume-details{background:var(--bg);padding:16px;border-radius:12px;margin-bottom:24px;color:var(--work);font-weight:700}
+  #resumeButtons{display:flex;gap:12px}
+  #resumeButtons button{flex:1;padding:14px 20px;border:0;border-radius:12px;font-weight:700;cursor:pointer;transition:.2s}
+  #resumeButtons .resume-btn{background:var(--work);color:var(--work-ink)}
+  #resumeButtons .new-btn{background:var(--panel);border:1px solid var(--line);color:var(--text)}
+
   /* ===== Ustawienia ===== */
   #settingsBtn{width:50px;height:50px;padding:0;font-size:1.4rem}
   #settingsOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:flex-end}
@@ -154,6 +166,18 @@
 
 <div id="planSelector">
   <!-- Opcje planów będą wstawiane dynamicznie -->
+</div>
+
+<div id="resumeOverlay">
+  <div id="resumePanel">
+    <h2>Wznowić trening?</h2>
+    <p>Znaleźliśmy zapisany trening. Chcesz kontynuować gdzie skończyłeś?</p>
+    <div class="resume-details" id="resumeDetails"></div>
+    <div id="resumeButtons">
+      <button class="resume-btn" id="resumeBtn">Wznów</button>
+      <button class="new-btn" id="newBtn">Nowy trening</button>
+    </div>
+  </div>
 </div>
 
 <div id="settingsOverlay">
@@ -276,6 +300,7 @@ async function initializePlanSelector(){
     label.onchange = async (e) => {
       if(e.target.checked){
         localStorage.setItem('selectedPlan', planName);
+        clearWorkoutState();
         await loadPlanFromFile(planName);
         if(window.initApp) initApp();
       }
@@ -362,7 +387,22 @@ function initApp(){
   loadSettings();
   $('wakeLockToggle').checked = settings.wakeLock;
   updatePlan();
-  goto(0);
+
+  // Sprawdź czy jest zapisany stan treningu
+  const savedState = loadWorkoutState();
+  if(savedState){
+    // Sprawdź czy plan się zgadza
+    if(savedState.selectedPlan === (localStorage.getItem('selectedPlan') || 'plan-0')){
+      // Pokaż dialog z pytaniem o wznowienie
+      showResumeDialog(savedState);
+    }else{
+      // Plan się zmienił, usuń zapisany stan
+      clearWorkoutState();
+      goto(0);
+    }
+  }else{
+    goto(0);
+  }
 }
 
 function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
@@ -414,6 +454,7 @@ function goto(i){
   total=remaining=steps[idx].t;
   prevBtn.disabled=idx===0;
   render();
+  saveWorkoutState();
 }
 
 function tickDown(){
@@ -429,6 +470,7 @@ function tickDown(){
     beep(steps[idx].type==='rest'?520:988,.18);
   }
   render();
+  saveWorkoutState();
 }
 
 function start(){
@@ -437,17 +479,20 @@ function start(){
   running=true; startBtn.textContent='Pauza'; startBtn.classList.remove('primary');
   tick=setInterval(tickDown,1000);
   if(settings.wakeLock) requestWakeLock();
+  saveWorkoutState();
 }
 function pause(){
   running=false; startBtn.textContent='Wznów'; startBtn.classList.add('primary');
   clearInterval(tick);
   releaseWakeLock();
+  saveWorkoutState();
 }
 function toggle(){ running?pause():start(); }
 
 function finish(){
   clearInterval(tick); running=false;
   releaseWakeLock();
+  clearWorkoutState();
   stage.className='done';
   phaseEl.textContent='Koniec';
   exEl.textContent='Trening zaliczony 🎉';
@@ -455,7 +500,7 @@ function finish(){
   nextEl.textContent='Świetna robota. Rozciągnij się i napij wody.';
   barEl.style.width='100%';
   startBtn.textContent='Od nowa'; startBtn.classList.add('primary');
-  startBtn.onclick=()=>{ startBtn.onclick=toggle; goto(0); };
+  startBtn.onclick=()=>{ startBtn.onclick=toggle; clearWorkoutState(); goto(0); };
   beep(1319,.3);
 }
 
@@ -639,6 +684,60 @@ $('wakeLockToggle').onchange = (e) => {
   if(running && e.target.checked) requestWakeLock();
   else if(!e.target.checked) releaseWakeLock();
 };
+
+// ===== WORKOUT STATE PERSISTENCE =====
+function saveWorkoutState(){
+  if(idx >= steps.length) return; // nie zapisuj gdy trening jest skończony
+  try{
+    const state = {
+      selectedPlan: localStorage.getItem('selectedPlan') || 'plan-0',
+      idx: idx,
+      remaining: remaining,
+      total: total,
+      running: running
+    };
+    localStorage.setItem('workoutState', JSON.stringify(state));
+  }catch(e){}
+}
+
+function loadWorkoutState(){
+  try{
+    const saved = localStorage.getItem('workoutState');
+    if(saved){
+      const state = JSON.parse(saved);
+      return state;
+    }
+  }catch(e){}
+  return null;
+}
+
+function clearWorkoutState(){
+  try{ localStorage.removeItem('workoutState'); }catch(e){}
+}
+
+function showResumeDialog(savedState){
+  const details = $('resumeDetails');
+  const exerciseName = steps[savedState.idx].name;
+  const timeLeft = fmt(savedState.remaining);
+  details.textContent = exerciseName + ' — ' + timeLeft + ' pozostało';
+
+  $('resumeOverlay').classList.add('open');
+
+  $('resumeBtn').onclick = () => {
+    $('resumeOverlay').classList.remove('open');
+    idx = savedState.idx;
+    remaining = savedState.remaining;
+    total = savedState.total;
+    render();
+    // Nie startuj automatycznie, czekaj na naciśnięcie Start
+  };
+
+  $('newBtn').onclick = () => {
+    clearWorkoutState();
+    $('resumeOverlay').classList.remove('open');
+    goto(0);
+  };
+}
 
 // Załaduj plan z pliku JSON i inicjuj aplikację
 initializePlanSelector();
