@@ -6,12 +6,14 @@
   {
     "type": "prep",
     "name": "Skakanka spokojnie",
-    "t": 120
+    "t": 120,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "prep",
     "name": "Krążenia ramion, bioder, przysiady",
-    "t": 180
+    "t": 180,
+    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
   },
   {
     "type": "head",
@@ -20,7 +22,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -30,7 +33,8 @@
   {
     "type": "work",
     "name": "Pompki na podporach",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o85xIO33l7RlmLqqI/giphy.gif"
   },
   {
     "type": "rest",
@@ -40,7 +44,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -50,7 +55,8 @@
   {
     "type": "work",
     "name": "Rozpiętki z gumą",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3ohzdKdb7d1vcRS3AW/giphy.gif"
   },
   {
     "type": "rest",
@@ -60,7 +66,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -70,7 +77,8 @@
   {
     "type": "work",
     "name": "Przysiad z gumą",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o6ZtpWB2Rv7DaQ4W4/giphy.gif"
   },
   {
     "type": "rest",
@@ -84,7 +92,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -94,7 +103,8 @@
   {
     "type": "work",
     "name": "Pompki wąskie (triceps)",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/1xhLqKKD1wHPgGxF6q/giphy.gif"
   },
   {
     "type": "rest",
@@ -104,7 +114,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -114,7 +125,8 @@
   {
     "type": "work",
     "name": "Wiosłowanie gumą",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o6Zt6KHxJTbXCnSvu/giphy.gif"
   },
   {
     "type": "rest",
@@ -124,7 +136,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -134,7 +147,8 @@
   {
     "type": "work",
     "name": "Wykroki",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o7TKU8JH1LuHn3cZG/giphy.gif"
   },
   {
     "type": "rest",
@@ -148,7 +162,8 @@
   {
     "type": "work",
     "name": "Skakanka (sprint/wolno)",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -158,7 +173,8 @@
   {
     "type": "work",
     "name": "Pompki wolne, głębokie",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o85xIO33l7RlmLqqI/giphy.gif"
   },
   {
     "type": "rest",
@@ -168,7 +184,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -178,7 +195,8 @@
   {
     "type": "work",
     "name": "Uginanie ramion (biceps)",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o7TKV0xY5YcQAg8Sa/giphy.gif"
   },
   {
     "type": "rest",
@@ -188,7 +206,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -198,7 +217,8 @@
   {
     "type": "work",
     "name": "Martwy ciąg z gumą",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o7TKEFKZtJ1xQSxQ0/giphy.gif"
   },
   {
     "type": "rest",
@@ -212,7 +232,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -222,7 +243,8 @@
   {
     "type": "work",
     "name": "Pompki diamentowe",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
   },
   {
     "type": "rest",
@@ -232,7 +254,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -242,7 +265,8 @@
   {
     "type": "work",
     "name": "Odwodzenie ramion (barki)",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o7TKMVrT6Z4xJPEu4/giphy.gif"
   },
   {
     "type": "rest",
@@ -252,7 +276,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -262,7 +287,8 @@
   {
     "type": "work",
     "name": "Plank na podporach",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/3o7TKV8Ye16CIrClxu/giphy.gif"
   },
   {
     "type": "rest",
@@ -276,6 +302,7 @@
   {
     "type": "prep",
     "name": "Rozciąganie: klatka, barki, uda, łydki",
-    "t": 300
+    "t": 300,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   }
 ]

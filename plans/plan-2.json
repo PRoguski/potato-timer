@@ -6,7 +6,8 @@
   {
     "type": "prep",
     "name": "Dynamiczna rozgrzewka",
-    "t": 60
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "head",
@@ -14,38 +15,42 @@
   },
   {
     "type": "work",
-    "name": "Skakanka",
-    "t": 20
-  },
-  {
-    "type": "rest",
-    "name": "Przerwa",
-    "t": 10
-  },
-  {
-    "type": "work",
-    "name": "Pompki",
-    "t": 20
-  },
-  {
-    "type": "rest",
-    "name": "Przerwa",
-    "t": 10
-  },
-  {
-    "type": "work",
-    "name": "Przysiad",
-    "t": 20
-  },
-  {
-    "type": "rest",
-    "name": "Przerwa",
-    "t": 10
-  },
-  {
-    "type": "work",
     "name": "Burpee",
-    "t": 20
+    "t": 20,
+    "image": "https://media.giphy.com/media/3o6ZtpWB2Rv7DaQ4W4/giphy.gif"
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 10
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 20,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 10
+  },
+  {
+    "type": "work",
+    "name": "Mountain climbers",
+    "t": 20,
+    "image": "https://media.giphy.com/media/3o7TKV0xY5YcQAg8Sa/giphy.gif"
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 10
+  },
+  {
+    "type": "work",
+    "name": "Pompki eksplosywne",
+    "t": 20,
+    "image": "https://media.giphy.com/media/3o85xIO33l7RlmLqqI/giphy.gif"
   },
   {
     "type": "rest",
@@ -58,7 +63,8 @@
   },
   {
     "type": "prep",
-    "name": "Rozciąganie",
-    "t": 60
+    "name": "Rozciąganie i oddychanie",
+    "t": 60,
+    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
   }
 ]

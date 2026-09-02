@@ -38,6 +38,15 @@
   #stage.done{background:var(--panel);color:var(--text)}
 
   .phase{font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;opacity:.72}
+
+  #exerciseImage{
+    max-width:min(280px, 80vw);max-height:200px;object-fit:contain;
+    margin:16px 0 8px;border-radius:12px;display:none;
+    background:rgba(0,0,0,.2);padding:8px;animation:fadeIn .4s ease;
+  }
+  #exerciseImage.visible{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+
   .exercise{
     font-size:clamp(2rem,9vw,3.2rem);font-weight:800;line-height:1.1;
     margin:.35em 0 0;max-width:11ch;
@@ -148,6 +157,7 @@
   <div class="progress" id="bar"></div>
   <div class="counter" id="counter"></div>
   <div class="phase" id="phase">Gotowy?</div>
+  <img id="exerciseImage" alt="Ćwiczenie">
   <div class="exercise" id="exercise">Trening interwałowy</div>
   <div class="clock" id="clock">00:00</div>
   <div class="next" id="next">Naciśnij „Start", żeby zacząć</div>
@@ -439,6 +449,18 @@ function render(){
   const nxt=steps[idx+1];
   nextEl.innerHTML = nxt ? 'Następnie: <b>'+nxt.name+'</b>' : 'To ostatni element 💪';
   barEl.style.width = (100*(total-remaining)/total)+'%';
+
+  // Wyświetl obraz ćwiczenia jeśli istnieje
+  const img = document.getElementById('exerciseImage');
+  if(step.image){
+    img.src = step.image;
+    img.alt = step.name;
+    img.classList.add('visible');
+  }else{
+    img.src = '';
+    img.alt = '';
+    img.classList.remove('visible');
+  }
 
   // Pozostały czas całego treningu
   const remainingTotal = calcRemainingTime();
