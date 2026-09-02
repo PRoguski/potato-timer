@@ -65,21 +65,6 @@
   }
   .counter{position:absolute;top:14px;right:18px;font-size:.8rem;font-weight:700;opacity:.6}
 
-  /* ===== Sterowanie ===== */
-  #controls{
-    display:flex;gap:12px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));
-    background:var(--bg);border-top:1px solid var(--line);
-  }
-  button{
-    flex:1;border:0;border-radius:14px;padding:18px 12px;font-size:1.05rem;font-weight:800;
-    font-family:inherit;color:var(--text);background:var(--panel);cursor:pointer;
-    transition:transform .08s ease,filter .15s ease;
-  }
-  button:active{transform:scale(.97)}
-  button.primary{background:var(--work);color:var(--work-ink)}
-  button.secondary{background:var(--panel);border:1px solid var(--line)}
-  button:disabled{opacity:.4;cursor:default}
-
   /* ===== Lista planu ===== */
   details{background:var(--bg);border-top:1px solid var(--line)}
   summary{padding:14px 18px;color:var(--muted);font-weight:700;cursor:pointer;font-size:.9rem}
@@ -110,8 +95,29 @@
   #resumeButtons .resume-btn{background:var(--work);color:var(--work-ink)}
   #resumeButtons .new-btn{background:var(--panel);border:1px solid var(--line);color:var(--text)}
 
-  /* ===== Ustawienia ===== */
-  #settingsBtn{width:50px;height:50px;padding:0;font-size:1.4rem}
+  /* ===== Sterowanie ===== */
+  #controls{
+    display:flex;gap:12px;padding:8px 12px calc(12px + env(safe-area-inset-bottom));
+    background:var(--bg);border-top:none;
+  }
+  button{
+    flex:1;border:none;border-radius:12px;padding:14px 10px;font-size:1rem;font-weight:800;
+    font-family:inherit;color:var(--text);background:var(--panel);cursor:pointer;
+    transition:transform .08s ease,filter .15s ease;
+  }
+  button:active{transform:scale(.97)}
+  button.primary{background:var(--work);color:var(--work-ink)}
+  button.secondary{background:var(--panel);border:none}
+  button:disabled{opacity:.4;cursor:default}
+
+  /* ===== Ustawienia - górny lewy róg ===== */
+  #settingsBtn{
+    position:fixed;top:env(safe-area-inset-top, 8px);left:8px;z-index:100;
+    width:44px;height:44px;padding:0;font-size:1.2rem;border:none;border-radius:10px;
+    background:var(--panel);color:var(--text);cursor:pointer;
+    transition:transform .08s ease;
+  }
+  #settingsBtn:active{transform:scale(.95)}
   #settingsOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:flex-end}
   #settingsOverlay.open{display:flex}
   #settingsPanel{background:var(--panel);width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:24px;max-height:80dvh;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5)}
@@ -163,11 +169,12 @@
   <div class="next" id="next">Naciśnij „Start", żeby zacząć</div>
 </div>
 
+<button class="secondary" id="settingsBtn">⚙</button>
+
 <div id="controls">
   <button class="secondary" id="prevBtn" disabled>‹ Wstecz</button>
   <button class="primary" id="startBtn">Start</button>
   <button class="secondary" id="nextBtn">Dalej ›</button>
-  <button class="secondary" id="settingsBtn">⚙</button>
 </div>
 
 <div id="remainingTime">
