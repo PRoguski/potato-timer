@@ -88,6 +88,22 @@
   .dot{width:8px;height:8px;border-radius:50%;flex:none}
   .dot.work{background:var(--work)} .dot.rest{background:var(--rest)}
   .dot.prep{background:var(--prep)} .dot.head{background:transparent}
+
+  /* ===== Ustawienia ===== */
+  #settingsBtn{width:50px;height:50px;padding:0;font-size:1.4rem}
+  #settingsOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:flex-end}
+  #settingsOverlay.open{display:flex}
+  #settingsPanel{background:var(--panel);width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:24px;max-height:80dvh;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5)}
+  .settings-title{font-size:1.3rem;font-weight:800;margin:0 0 24px;color:var(--text)}
+  .setting-item{margin-bottom:20px}
+  .setting-label{font-size:.9rem;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+  .setting-value{color:var(--work)}
+  input[type="range"]{width:100%;height:8px;border-radius:4px;background:var(--line);outline:none;-webkit-appearance:none;appearance:none}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--work);cursor:pointer;transition:.1s}
+  input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--work);cursor:pointer;border:0;transition:.1s}
+  .settings-footer{display:flex;gap:12px;margin-top:24px}
+  .settings-footer button{flex:1}
+  #resetBtn{background:var(--panel);border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -105,6 +121,50 @@
   <button class="secondary" id="prevBtn" disabled>‹ Wstecz</button>
   <button class="primary" id="startBtn">Start</button>
   <button class="secondary" id="nextBtn">Dalej ›</button>
+  <button class="secondary" id="settingsBtn">⚙</button>
+</div>
+
+<div id="settingsOverlay">
+  <div id="settingsPanel">
+    <h2 class="settings-title">Ustawienia</h2>
+
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>Rozmiar nazwy ćwiczenia</span>
+        <span class="setting-value" id="exerciseSizeValue">100%</span>
+      </div>
+      <input type="range" id="exerciseSize" min="70" max="150" value="100" step="5">
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>Rozmiar „Następnie"</span>
+        <span class="setting-value" id="nextSizeValue">100%</span>
+      </div>
+      <input type="range" id="nextSize" min="70" max="150" value="100" step="5">
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>Czas pracy (sekundy)</span>
+        <span class="setting-value" id="workTimeValue">60s</span>
+      </div>
+      <input type="range" id="workTime" min="30" max="120" value="60" step="10">
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-label">
+        <span>Czas przerwy (sekundy)</span>
+        <span class="setting-value" id="restTimeValue">30s</span>
+      </div>
+      <input type="range" id="restTime" min="15" max="60" value="30" step="5">
+    </div>
+
+    <div class="settings-footer">
+      <button class="secondary" id="resetBtn">Resetuj</button>
+      <button class="primary" id="closeSettingsBtn">Gotowe</button>
+    </div>
+  </div>
 </div>
 
 <details>
@@ -268,6 +328,128 @@ plan.forEach(p=>{
   listEl.appendChild(row);
 });
 
+// ===== USTAWIENIA (localStorage) =====
+const defaultSettings = {
+  exerciseSize: 100,
+  nextSize: 100,
+  workTime: 60,
+  restTime: 30
+};
+
+let settings = {...defaultSettings};
+
+function loadSettings(){
+  try{
+    const saved = localStorage.getItem('timerSettings');
+    if(saved) settings = {...defaultSettings, ...JSON.parse(saved)};
+  }catch(e){}
+  applySettings();
+}
+
+function saveSettings(){
+  try{ localStorage.setItem('timerSettings', JSON.stringify(settings)); }catch(e){}
+}
+
+function applySettings(){
+  // Zastosuj rozmiary czcionek
+  const exerciseScale = settings.exerciseSize / 100;
+  const nextScale = settings.nextSize / 100;
+  exEl.style.fontSize = (exerciseScale >= 1 ? 'clamp(' : '') +
+    (2 * exerciseScale) + 'rem,' + (9 * exerciseScale) + 'vw,' + (3.2 * exerciseScale) + 'rem' + (exerciseScale >= 1 ? ')' : '');
+  nextEl.style.fontSize = 'clamp(' + (1.1 * nextScale) + 'rem,' + (4 * nextScale) + 'vw,' + (1.4 * nextScale) + 'rem)';
+
+  // Zaktualizuj wartości inputów
+  $('exerciseSize').value = settings.exerciseSize;
+  $('nextSize').value = settings.nextSize;
+  $('workTime').value = settings.workTime;
+  $('restTime').value = settings.restTime;
+
+  // Zaktualizuj wyświetlane wartości
+  $('exerciseSizeValue').textContent = settings.exerciseSize + '%';
+  $('nextSizeValue').textContent = settings.nextSize + '%';
+  $('workTimeValue').textContent = settings.workTime + 's';
+  $('restTimeValue').textContent = settings.restTime + 's';
+}
+
+function resetSettings(){
+  settings = {...defaultSettings};
+  saveSettings();
+  applySettings();
+}
+
+function updatePlan(){
+  // Zaktualizuj plan z nowymi czasami
+  const S = settings.restTime;
+  plan.forEach(p => {
+    if(p.type === 'work') p.t = settings.workTime;
+    if(p.type === 'rest') p.t = S;
+  });
+  // Przebuduj listę
+  listEl.innerHTML = '';
+  stepPtr = 0;
+  plan.forEach(p=>{
+    const row=document.createElement('div');
+    if(p.type==='head'){
+      row.className='row head';
+      row.innerHTML='<span class="dot head"></span><span class="idx"></span>'+
+        '<span class="name">'+p.name+'</span><span class="dur"></span>';
+    }else{
+      const si=stepPtr++;
+      row.className='row'; row.dataset.step=si;
+      row.innerHTML='<span class="dot '+p.type+'"></span><span class="idx">'+(si+1)+'</span>'+
+        '<span class="name">'+p.name+'</span><span class="dur">'+fmt(p.t)+'</span>';
+      row.onclick=()=>{ pause(); goto(si); };
+    }
+    listEl.appendChild(row);
+  });
+}
+
+// Ustawienia UI
+const settingsOverlay = $('settingsOverlay');
+const settingsBtn = $('settingsBtn');
+const closeSettingsBtn = $('closeSettingsBtn');
+const resetBtn = $('resetBtn');
+
+settingsBtn.onclick = () => { settingsOverlay.classList.add('open'); };
+closeSettingsBtn.onclick = () => { settingsOverlay.classList.remove('open'); };
+settingsOverlay.onclick = (e) => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('open'); };
+
+$('exerciseSize').oninput = (e) => {
+  settings.exerciseSize = parseInt(e.target.value);
+  $('exerciseSizeValue').textContent = settings.exerciseSize + '%';
+  exEl.style.fontSize = 'clamp(' + (2 * settings.exerciseSize / 100) + 'rem,' + (9 * settings.exerciseSize / 100) + 'vw,' + (3.2 * settings.exerciseSize / 100) + 'rem)';
+  saveSettings();
+};
+
+$('nextSize').oninput = (e) => {
+  settings.nextSize = parseInt(e.target.value);
+  $('nextSizeValue').textContent = settings.nextSize + '%';
+  nextEl.style.fontSize = 'clamp(' + (1.1 * settings.nextSize / 100) + 'rem,' + (4 * settings.nextSize / 100) + 'vw,' + (1.4 * settings.nextSize / 100) + 'rem)';
+  saveSettings();
+};
+
+$('workTime').oninput = (e) => {
+  settings.workTime = parseInt(e.target.value);
+  $('workTimeValue').textContent = settings.workTime + 's';
+  updatePlan();
+  saveSettings();
+};
+
+$('restTime').oninput = (e) => {
+  settings.restTime = parseInt(e.target.value);
+  $('restTimeValue').textContent = settings.restTime + 's';
+  updatePlan();
+  saveSettings();
+};
+
+resetBtn.onclick = () => {
+  resetSettings();
+  updatePlan();
+};
+
+// Załaduj ustawienia i inicjuj
+loadSettings();
+updatePlan();
 goto(0);
 </script>
 </body>
