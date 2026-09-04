@@ -511,6 +511,13 @@ $('wakeLockToggle').onchange = (e) => {
   else if(!e.target.checked) releaseWakeLock();
 };
 
+// Tap navigation toggle
+$('tapNavToggle').onchange = (e) => {
+  settings.tapNavigation = e.target.checked;
+  applySettings();
+  saveSettings();
+};
+
 // Define clearWorkoutState function
 function clearWorkoutState(){
   try{ localStorage.removeItem('workoutState'); }catch(e){}
