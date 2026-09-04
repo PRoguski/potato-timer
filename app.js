@@ -152,7 +152,15 @@ function initApp(){
   loadSettings();
   $('wakeLockToggle').checked = settings.wakeLock;
   updatePlan();
-  goto(0);
+
+  // Check for saved workout state
+  const savedState = loadWorkoutState();
+  if(savedState && savedState.selectedPlan === localStorage.getItem('selectedPlan')){
+    showResumeDialog(savedState);
+  } else {
+    clearWorkoutState();
+    goto(0);
+  }
 }
 
 function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
@@ -204,6 +212,7 @@ function goto(i){
   total=remaining=steps[idx].t;
   prevBtn.disabled=idx===0;
   render();
+  saveWorkoutState();
 }
 
 function tickDown(){
@@ -219,6 +228,7 @@ function tickDown(){
     beep(steps[idx].type==='rest'?520:988,.18);
   }
   render();
+  saveWorkoutState();
 }
 
 function start(){
@@ -238,6 +248,7 @@ function toggle(){ running?pause():start(); }
 function finish(){
   clearInterval(tick); running=false;
   releaseWakeLock();
+  clearWorkoutState();
   stage.className='done';
   phaseEl.textContent='Koniec';
   exEl.textContent='Trening zaliczony 🎉';
@@ -521,6 +532,69 @@ $('tapNavToggle').onchange = (e) => {
 // Define clearWorkoutState function
 function clearWorkoutState(){
   try{ localStorage.removeItem('workoutState'); }catch(e){}
+}
+
+// Save workout state for resuming later
+function saveWorkoutState(){
+  try{
+    const state = {
+      selectedPlan: localStorage.getItem('selectedPlan'),
+      idx: idx,
+      remaining: remaining,
+      total: total,
+      running: running,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('workoutState', JSON.stringify(state));
+  }catch(e){}
+}
+
+// Load and check for saved workout state
+function loadWorkoutState(){
+  try{
+    const saved = localStorage.getItem('workoutState');
+    if(saved){
+      const state = JSON.parse(saved);
+      // Check if saved state is recent (less than 1 hour old)
+      if(Date.now() - state.timestamp < 3600000){
+        return state;
+      }
+    }
+  }catch(e){}
+  return null;
+}
+
+// Show resume dialog
+function showResumeDialog(state){
+  const overlay = $('resumeOverlay');
+  const details = $('resumeDetails');
+  const resumeBtn = $('resumeBtn');
+  const newBtn = $('newBtn');
+
+  // Show current exercise name and time
+  const step = steps[state.idx];
+  details.textContent = `${step.name} (${fmt(state.remaining)})`;
+
+  overlay.style.display = 'flex';
+
+  resumeBtn.onclick = () => {
+    overlay.style.display = 'none';
+    idx = state.idx;
+    remaining = state.remaining;
+    total = state.total;
+    running = false;
+    render();
+  };
+
+  newBtn.onclick = () => {
+    overlay.style.display = 'none';
+    clearWorkoutState();
+    idx = 0;
+    remaining = steps[0].t;
+    total = steps[0].t;
+    running = false;
+    render();
+  };
 }
 
 // Załaduj plan z pliku JSON i inicjuj aplikację
