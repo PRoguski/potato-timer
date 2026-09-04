@@ -4,13 +4,25 @@ Aplikacja webowa: **timer treningu interwałowego**. Bez zależności, bez build
 
 ### Struktura projektu
 
-**Wersja główna (main)** — Vanilla JavaScript:
-- `index.html` — strukturą i style
-- `app.js` — logika aplikacji (19 KB)
-- `plans/plan-*.json` — plany treningowe
+Dostępne są trzy wersje aplikacji:
 
-**Wersja alternatywna** — Vue.js 3 (branch `feature/vuejs-refactor`):
+**Wersja główna (main)** — Vanilla JavaScript:
+- `index.html` — struktura HTML i style CSS
+- `app.js` — logika aplikacji (20 KB)
+- `plans/plan-*.json` — plany treningowe
+- Bez zależności, 100% offline, natychmiastowe ładowanie
+
+**Wersja alternatywna 1** — Vue.js 3 (branch `feature/vuejs-refactor`):
 - `index-vue.html` — kompletna aplikacja w Vue.js 3 (CDN)
+- Single-file component, reaktywne state management
+- 24 KB, Vue.js z CDN, offline-first
+
+**Wersja alternatywna 2** — Angular (branch `feature/angular-refactor`):
+- `src/` — pełny projekt Angular z TypeScript
+- `src/main.ts` — entry point
+- `src/app/` — komponenty i serwisy
+- Wymaga builda, Angular CLI, RxJS observables
+- Najcięższa ale najbardziej skalowalna
 
 ## Sprzęt użytkownika / założenia treningu
 
@@ -40,9 +52,29 @@ Otwiera się w przeglądarce. Bez kompilacji, bez żadnych kroków — wszystko 
 ```bash
 git checkout feature/vuejs-refactor
 npm start
+# Otwiera http://localhost:8080 z index-vue.html
 ```
 
-Otwiera `index-vue.html` zamiast `index.html`.
+### Wersja Angular
+
+```bash
+git checkout feature/angular-refactor
+npm install     # Zainstaluj Angular dependencies
+npm run ng:serve
+# Otwiera http://localhost:4200 z Angular dev server
+```
+
+**Porównanie wersji:**
+
+| Aspekt | Vanilla JS | Vue.js | Angular |
+|--------|-----------|--------|---------|
+| Zależności | 0 | 1 (Vue 3 CDN) | Wiele (Angular tooling) |
+| Rozmiar | ~30 KB | ~40 KB | ~200 KB (bundled) |
+| Ładowanie | Natychmiastowe | Natychmiastowe | Wymaga builda |
+| Offline | ✅ 100% | ✅ 100% | ✅ 100% (po buildzie) |
+| Skalowanie | Średnie | Dobre | Świetne |
+| TypeScript | Nie | Nie | ✅ |
+| Reaktywność | Manualna | Automatyczna | Automatyczna (RxJS) |
 
 ## Struktura pliku (Vanilla JS)
 
@@ -234,21 +266,59 @@ Prep time między ćwiczeniami dodawany jest **dynamicznie** przez `buildPlan()`
 
 ### Vanilla JavaScript (`main` branch)
 
-- **Plik**: `index.html` + `app.js`
+- **Struktura**: `index.html` + `app.js`
 - **Rozmiar**: ~30 KB (HTML + JS)
-- **Zależności**: zero
-- **Wydajność**: bardzo szybko ładuje się
+- **Zależności**: zero, live-server tylko do dev
+- **Ładowanie**: natychmiastowe, bez builda
 - **Offline**: 100% funkcjonalny bez internetu
-- **Browser support**: Chrome, Firefox, Safari, Edge (ostatnie 2 wersje)
+- **Reaktywność**: manualne DOM updates
+- **TypeScript**: nie
+- **Uruchamianie**: `npm start`
 
 ### Vue.js 3 (`feature/vuejs-refactor` branch)
 
-- **Plik**: `index-vue.html` (single-file, Vue 3 CDN)
-- **Rozmiar**: ~40 KB
+- **Struktura**: `index-vue.html` (single-file component)
+- **Rozmiar**: ~40 KB (app code + Vue 3 runtime z CDN)
 - **Zależności**: Vue 3 z CDN (https://cdnjs.cloudflare.com)
-- **Zaleta**: reaktywny, łatwy do rozszerzeń
-- **Eksperymentalna**: alternatywa do testowania
+- **Ładowanie**: natychmiastowe, bez builda
+- **Offline**: 100% offline (Vue z CDN)
+- **Reaktywność**: automatyczna, data properties + watchers
+- **TypeScript**: nie
+- **Uruchamianie**: `npm start` (przechodzi na `index-vue.html`)
 
-**Która wersja wybrać?**
-- Vanilla JS — jeśli chcesz zero zależności, szybkosc ładowania, offline 100%
-- Vue.js — jeśli planujesz dalsze rozszerzenia, lubisz reactive patterns
+### Angular (`feature/angular-refactor` branch)
+
+- **Struktura**: pełny Angular projekt z TypeScript
+  - `src/main.ts` — entry point
+  - `src/app/app.component.ts` — main component
+  - `src/app/services/` — timer, settings, plans services
+  - `angular.json`, `tsconfig.json` — konfiguracja
+- **Rozmiar**: ~200+ KB (bundled), ale modularne
+- **Zależności**: Angular, TypeScript, RxJS, webpack
+- **Ładowanie**: wymaga builda (`npm run ng:build`)
+- **Offline**: 100% offline (po buildzie)
+- **Reaktywność**: automatyczna, RxJS BehaviorSubjects + observables
+- **TypeScript**: ✅ w pełni
+- **Skalowanie**: najlepsze (dependency injection, services, components)
+- **Uruchamianie**: `npm run ng:serve` (dev server na 4200)
+
+**Koja wersja wybrać?**
+
+- **Vanilla JS** — jeśli chcesz:
+  - Zero dependencies, najszybszy ładunek
+  - Pełny offline bez żadnych polegań
+  - Najprostszy kod do edycji
+  - Maksymalną wydajność na słabych urządzeniach
+
+- **Vue.js** — jeśli chcesz:
+  - Reactive data binding (automatyczne UI updates)
+  - Łatwy kod do czytania i rozszerzenia
+  - Single-file component (logika + template razem)
+  - Bez builda, bez TypeScript
+
+- **Angular** — jeśli chcesz:
+  - Profesjonalny framework dla dużych projektów
+  - Dependency injection, serwisy, komponenty
+  - TypeScript + strong typing
+  - Skalowalne rozszerzenia
+  - Best practices dla enterprise
