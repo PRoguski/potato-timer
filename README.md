@@ -1,8 +1,16 @@
 # Trening — Timer
 
-Jednoplikowa aplikacja webowa: **timer treningu interwałowego**. Cały kod
-(HTML + CSS + JS) siedzi w `trening-timer.html`. Bez zależności, bez builda,
-bez internetu — otwiera się bezpośrednio w przeglądarce (też na telefonie).
+Aplikacja webowa: **timer treningu interwałowego**. Bez zależności, bez builda, bez internetu — otwiera się bezpośrednio w przeglądarce (też na telefonie).
+
+### Struktura projektu
+
+**Wersja główna (main)** — Vanilla JavaScript:
+- `index.html` — strukturą i style
+- `app.js` — logika aplikacji (19 KB)
+- `plans/plan-*.json` — plany treningowe
+
+**Wersja alternatywna** — Vue.js 3 (branch `feature/vuejs-refactor`):
+- `index-vue.html` — kompletna aplikacja w Vue.js 3 (CDN)
 
 ## Sprzęt użytkownika / założenia treningu
 
@@ -15,13 +23,37 @@ Struktura:
 
 Ćwiczenia siłowe: pompki, rozpiętki z gumą, przysiady, wiosłowanie, wykroki, martwy ciąg, plank.
 
-## Struktura pliku
+## Uruchomienie
 
-Wszystko w jednym `trening-timer.html`:
-- **`<head>`** — metadata, charset UTF-8, viewport dla mobile (safe-area-inset dla notchy).
-- **`<style>`** — CSS Grid/Flexbox, motyw ciemny, zmienne kolorów (--bg, --work, --rest, --prep), responsive (clamp).
-- **`const plan`** — tablica kroków treningu (źródło prawdy). Edycja treningu = edycja tej tablicy.
-- **`<script>`** — timer engine, WebAudio synth, event handlers, render pipeline, lista planu.
+### Wersja główna (Vanilla JS)
+
+```bash
+npm start       # Uruchamia live-server na http://localhost:8080
+# lub
+npm run dev     # Alias dla npm start
+```
+
+Otwiera się w przeglądarce. Bez kompilacji, bez żadnych kroków — wszystko działa offline.
+
+### Wersja Vue.js
+
+```bash
+git checkout feature/vuejs-refactor
+npm start
+```
+
+Otwiera `index-vue.html` zamiast `index.html`.
+
+## Struktura pliku (Vanilla JS)
+
+Rozdzielone na dwa pliki:
+- **`index.html`** — struktura HTML i style CSS (Grid/Flexbox, motyw ciemny, zmienne kolorów)
+- **`app.js`** — logika aplikacji:
+  - Timer engine (initApp, goto, tickDown, render)
+  - WebAudio synth do dźwięków (beep)
+  - Event handlers (przyciski, ustawienia)
+  - Persistence (localStorage — ustawienia, stan treningu)
+  - Plan builder (dynamiczna wstawka prep time pomiędzy przerwy i ćwiczenia)
 
 ## Model danych
 
@@ -134,10 +166,23 @@ Klik w rząd → `pause()` → `goto(idx)`. Active row: `.active` (highlight tł
 Edytuj `const plan` — dodaj/usuń/modyfikuj obiekty. Kiedy `type !== 'head'`, liczy się czas.
 Uruchom stronę → automatycznie wylicza długość (`steps.length`) i wstawia w countery.
 
+## Implementowane funkcje
+
+✅ **Timer interwałowy** — odpoczynek, ćwiczenia, rozgrzewka, schłodzenie  
+✅ **Czas przygotowania** — automatyczne przerwy do przygotowania sprzętu (5-30 s, konfigurowalnie)  
+✅ **Gif demonstrujące** — animacje z Giphy dla każdego ćwiczenia  
+✅ **Dźwięki** — WebAudio synth, ostrzeżenia przed koncem, sygnały przejść  
+✅ **Ustawienia** — suwaki: czas pracy, przerwy, przygotowania; przełączniki: ekran aktywny, nawigacja tapem  
+✅ **Wznowienie treningu** — localStorage, resume dialog po przeładowaniu  
+✅ **Navigacja** — przyciski, tapnięcie w trzy strefy ekranu, lista planu z jump-to  
+✅ **Responsive** — mobile-first, safe-area-inset dla notchy  
+✅ **Dark theme** — ciemne kolory, zmienne CSS  
+✅ **Offline** — brak zależności, wszystko działa bez internetu (poza gifami)  
+
 ## Konwencje
 
 - **Interfejs po polsku** — utrzymuj polski w UI i komunikatach (phase labels, przycisk, next text).
-- **Zero zależności** — trzymaj jako jeden plik `.html`, offline-first, brak CDN.
+- **Zero zależności** (Vanilla JS) — offline-first, brak npm w runtime.
 - **Kolory semantyczne**:
   - Zielony = praca/wysiłek.
   - Niebieski = przerwa/regeneracja.
@@ -157,13 +202,53 @@ function fmt(s) {
 }
 ```
 
+## Plany treningowe
+
+Plany są przechowywane w JSON (`plans/plan-*.json`):
+- `plan-0.json` — Standardowy (60 min, 4 rundy)
+- `plan-1.json` — Alternatywny (do zdefiniowania)
+- `plan-2.json` — Alternatywny (do zdefiniowania)
+
+Każdy plan to tablica kroków:
+```json
+[
+  { "type": "head", "name": "ROZGRZEWKA" },
+  { "type": "prep", "name": "Skakanka spokojnie", "t": 120, "image": "https://..." },
+  { "type": "work", "name": "Pompki", "t": 60, "image": "https://..." },
+  { "type": "rest", "name": "Przerwa", "t": 30 }
+]
+```
+
+Prep time między ćwiczeniami dodawany jest **dynamicznie** przez `buildPlan()` w app.js — nie modyfikuje JSON.
+
 ## Możliwe kolejne kroki (backlog)
 
 - **Głosowe zapowiadanie** (Web Speech API / SpeechSynthesis) — czytanie nazwy ćwiczenia.
-- **Wake Lock API** — blokada wygaszania ekranu podczas treningu.
-- **Suwaki personalizacji** — długość przerwy, czas pracy, liczba rund.
-- **localStorage** — zapamiętanie ustawień, ostatniej pozycji, preferencji dzwiękowych.
-- **Ciemny/jasny motyw** — przełącznik lub auto wg `prefers-color-scheme`.
 - **Vibration API** — wibracja na mobilach zamiast/oprócz dźwięków.
 - **Statystyka** — liczba ukończonych treningów, kalendarz.
-- **Edytor planu** — UI do tworzenia własnych treningów bez edycji kodu.
+- **Edytor planu** — UI do tworzenia własnych treningów bez edycji JSON.
+- **Eksport/Import** — udostępnianie planów między użytkownikami.
+- **Build step** — Vite/Webpack dla Vue.js wersji (zamiast CDN).
+
+## Wersje aplikacji
+
+### Vanilla JavaScript (`main` branch)
+
+- **Plik**: `index.html` + `app.js`
+- **Rozmiar**: ~30 KB (HTML + JS)
+- **Zależności**: zero
+- **Wydajność**: bardzo szybko ładuje się
+- **Offline**: 100% funkcjonalny bez internetu
+- **Browser support**: Chrome, Firefox, Safari, Edge (ostatnie 2 wersje)
+
+### Vue.js 3 (`feature/vuejs-refactor` branch)
+
+- **Plik**: `index-vue.html` (single-file, Vue 3 CDN)
+- **Rozmiar**: ~40 KB
+- **Zależności**: Vue 3 z CDN (https://cdnjs.cloudflare.com)
+- **Zaleta**: reaktywny, łatwy do rozszerzeń
+- **Eksperymentalna**: alternatywa do testowania
+
+**Która wersja wybrać?**
+- Vanilla JS — jeśli chcesz zero zależności, szybkosc ładowania, offline 100%
+- Vue.js — jeśli planujesz dalsze rozszerzenia, lubisz reactive patterns
