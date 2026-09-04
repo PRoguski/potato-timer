@@ -198,6 +198,15 @@ function render(){
   nextEl.innerHTML = nxt ? 'Następnie: <b>'+nxt.name+'</b>' : 'To ostatni element 💪';
   barEl.style.width = (100*(total-remaining)/total)+'%';
 
+  // Wyświetl GIF jeśli istnieje
+  const imgEl = $('exerciseImage');
+  if(step.image){
+    imgEl.src = step.image;
+    imgEl.style.display = 'block';
+  }else{
+    imgEl.style.display = 'none';
+  }
+
   // Pozostały czas całego treningu
   const remainingTotal = calcRemainingTime();
   document.getElementById('remainingTimeValue').textContent = fmt(remainingTotal);
