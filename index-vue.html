@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trening — Timer (Vue.js)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.min.js"></script>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#161c26;
+    --line:#26303d;
+    --text:#eef2f6;
+    --muted:#8b98a8;
+    --work:#c6ff3d;      /* praca */
+    --work-ink:#12200a;
+    --rest:#38bdf8;      /* przerwa */
+    --rest-ink:#04222f;
+    --prep:#f4a742;      /* rozgrzewka/schłodzenie */
+    --prep-ink:#2a1a02;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex;flex-direction:column;min-height:100dvh;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+
+  /* ===== Ekran timera ===== */
+  #stage{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px 20px;transition:background .35s ease;position:relative;
+  }
+  #stage.work{background:var(--work);color:var(--work-ink)}
+  #stage.rest{background:var(--rest);color:var(--rest-ink)}
+  #stage.prep{background:var(--prep);color:var(--prep-ink)}
+  #stage.done{background:var(--panel);color:var(--text)}
+
+  .phase{font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;opacity:.72}
+  .exercise{
+    font-size:clamp(2rem,9vw,3.2rem);font-weight:800;line-height:1.1;
+    margin:.35em 0 0;max-width:11ch;
+  }
+  .clock{
+    font-variant-numeric:tabular-nums;font-weight:800;
+    font-size:clamp(5rem,30vw,11rem);line-height:.95;margin:.05em 0;
+    letter-spacing:-.02em;
+  }
+  .next{font-size:clamp(1.1rem,4vw,1.4rem);font-weight:600;opacity:.7;min-height:1.4em}
+  .next b{font-weight:800}
+
+  .progress{
+    position:absolute;left:0;top:0;height:5px;background:rgba(0,0,0,.28);
+    width:0;transition:width .25s linear;
+  }
+  .counter{position:absolute;top:14px;right:18px;font-size:.8rem;font-weight:700;opacity:.6}
+
+  /* ===== Sterowanie ===== */
+  #controls{
+    display:flex;gap:12px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+    background:var(--bg);border-top:1px solid var(--line);
+  }
+  button{
+    flex:1;border:0;border-radius:14px;padding:18px 12px;font-size:1.05rem;font-weight:800;
+    font-family:inherit;color:var(--text);background:var(--panel);cursor:pointer;
+    transition:transform .08s ease,filter .15s ease;
+  }
+  button:active{transform:scale(.97)}
+  button.primary{background:var(--work);color:var(--work-ink)}
+  button.secondary{background:var(--panel);border:1px solid var(--line)}
+  button:disabled{opacity:.4;cursor:default}
+
+  /* ===== Lista planu ===== */
+  details{background:var(--bg);border-top:1px solid var(--line)}
+  summary{padding:14px 18px;color:var(--muted);font-weight:700;cursor:pointer;font-size:.9rem}
+  .list{max-height:42dvh;overflow:auto;padding:0 12px 12px}
+  .row{
+    display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:10px;
+    border-bottom:1px solid var(--line);font-size:.92rem;
+  }
+  .row:last-child{border-bottom:0}
+  .row.active{background:#1d2430}
+  .row .idx{width:26px;color:var(--muted);font-weight:700;font-size:.82rem;text-align:right}
+  .row .name{flex:1}
+  .row .dur{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
+  .row.head .name{font-weight:800;color:var(--text);letter-spacing:.04em}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .dot.work{background:var(--work)} .dot.rest{background:var(--rest)}
+  .dot.prep{background:var(--prep)} .dot.head{background:transparent}
+
+  /* ===== Ustawienia ===== */
+  #settingsBtn{
+    position:fixed;top:env(safe-area-inset-top, 8px);left:8px;z-index:100;
+    width:44px;height:44px;padding:0;font-size:1.2rem;border:none;border-radius:10px;
+    background:var(--panel);color:var(--text);cursor:pointer;
+    transition:transform .08s ease;
+  }
+  #settingsBtn:active{transform:scale(.95)}
+  #settingsOverlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:flex-end}
+  #settingsOverlay.open{display:flex}
+  #settingsPanel{background:var(--panel);width:100%;max-width:500px;border-radius:20px 20px 0 0;padding:24px;max-height:80dvh;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5)}
+  .settings-title{font-size:1.3rem;font-weight:800;margin:0 0 24px;color:var(--text)}
+  .setting-item{margin-bottom:20px}
+  .setting-label{font-size:.9rem;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+  .setting-value{color:var(--work)}
+  input[type="range"]{width:100%;height:8px;border-radius:4px;background:var(--line);outline:none;-webkit-appearance:none;appearance:none}
+  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--work);cursor:pointer;transition:.1s}
+  input[type="range"]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--work);cursor:pointer;border:0;transition:.1s}
+  .settings-footer{display:flex;gap:12px;margin-top:24px}
+  .settings-footer button{flex:1}
+  #resetBtn{background:var(--panel);border:1px solid var(--line)}
+
+  .toggle-switch{display:flex;align-items:center;gap:12px;cursor:pointer}
+  input[type="checkbox"]{width:44px;height:24px;cursor:pointer;accent-color:var(--work);appearance:none;-webkit-appearance:none;position:relative;border-radius:12px;background:var(--line);border:none;transition:background .3s;flex-shrink:0}
+  input[type="checkbox"]:checked{background:var(--work)}
+  input[type="checkbox"]::-webkit-slider-thumb{display:none}
+
+  #remainingTime{
+    padding:12px 16px;background:var(--panel);border-top:1px solid var(--line);
+    text-align:center;font-size:.95rem;font-weight:700;color:var(--muted);
+    letter-spacing:.05em;
+  }
+  #remainingTime .time{color:var(--work);font-size:1.2rem;font-weight:800}
+
+  #planSelector{
+    padding:12px 16px;background:var(--panel);border-top:1px solid var(--line);
+    font-size:.85rem;
+    display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;
+  }
+  #planSelector label{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--muted)}
+  #planSelector input[type="radio"]{cursor:pointer;accent-color:var(--work)}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Resume Dialog -->
+  <div v-if="showResumeDialog" class="resume-overlay">
+    <div class="resume-panel">
+      <h2>Wznowić trening?</h2>
+      <p>{{ resumeDetails }}</p>
+      <div class="resume-buttons">
+        <button @click="startNewWorkout" class="secondary">Nowy trening</button>
+        <button @click="resumeWorkout" class="primary">Wznów</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Overlay -->
+  <div id="settingsOverlay" :class="{ open: showSettings }">
+    <div id="settingsPanel">
+      <h2 class="settings-title">Ustawienia</h2>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Rozmiar nazwy ćwiczenia</span>
+          <span class="setting-value">{{ settings.exerciseSize }}%</span>
+        </div>
+        <input v-model.number="settings.exerciseSize" type="range" min="70" max="150" step="5">
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Rozmiar „Następnie"</span>
+          <span class="setting-value">{{ settings.nextSize }}%</span>
+        </div>
+        <input v-model.number="settings.nextSize" type="range" min="70" max="150" step="5">
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Czas pracy (sekundy)</span>
+          <span class="setting-value">{{ settings.workTime }}s</span>
+        </div>
+        <input v-model.number="settings.workTime" type="range" min="30" max="120" step="10">
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Czas przerwy (sekundy)</span>
+          <span class="setting-value">{{ settings.restTime }}s</span>
+        </div>
+        <input v-model.number="settings.restTime" type="range" min="15" max="60" step="5">
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Czas przygotowania (sekundy)</span>
+          <span class="setting-value">{{ settings.prepTime }}s</span>
+        </div>
+        <input v-model.number="settings.prepTime" type="range" min="5" max="30" step="5">
+      </div>
+
+      <div class="setting-item">
+        <label class="toggle-switch">
+          <input v-model="settings.wakeLock" type="checkbox">
+          <span>Nie wyłączaj ekranu podczas treningu</span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <label class="toggle-switch">
+          <input v-model="settings.tapNavigation" type="checkbox">
+          <span>Klikanie na ekran zamiast przycisków</span>
+        </label>
+      </div>
+
+      <div class="settings-footer">
+        <button @click="resetSettings" class="secondary" id="resetBtn">Resetuj</button>
+        <button @click="closeSettings" class="primary">Gotowe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Stage -->
+  <div id="stage" :class="currentStep.type" @click="handleStageClick">
+    <div class="progress" :style="{ width: progressPercent + '%' }"></div>
+    <div class="counter">{{ idx + 1 }} / {{ steps.length }}</div>
+    <div class="phase">{{ phaseLabel[currentStep.type] || '' }}</div>
+    <img v-if="currentStep.image" :src="currentStep.image" alt="" style="max-width:200px;max-height:200px;border-radius:10px;margin:16px 0;display:block;object-fit:cover">
+    <div class="exercise">{{ currentStep.name }}</div>
+    <div class="clock">{{ formatTime(remaining) }}</div>
+    <div class="next" v-if="nextStep">Następnie: <b>{{ nextStep.name }}</b></div>
+    <div class="next" v-else>To ostatni element 💪</div>
+  </div>
+
+  <!-- Settings Button -->
+  <button id="settingsBtn" @click="openSettings">⚙</button>
+
+  <!-- Controls -->
+  <div id="controls" v-if="!settings.tapNavigation">
+    <button @click="previous" :disabled="idx === 0" class="secondary">‹ Wstecz</button>
+    <button @click="togglePlayPause" class="primary">{{ running ? 'Pauza' : (idx === steps.length - 1 ? 'Od nowa' : 'Start') }}</button>
+    <button @click="next" class="secondary">Dalej ›</button>
+  </div>
+
+  <!-- Remaining Time -->
+  <div id="remainingTime">
+    Pozostało: <span class="time">{{ formatTime(calcRemainingTime()) }}</span>
+  </div>
+
+  <!-- Plan Selector -->
+  <div id="planSelector">
+    <label v-for="plan in availablePlans" :key="plan">
+      <input v-model="selectedPlan" type="radio" :value="plan">
+      <span>{{ planNames[plan] || plan }}</span>
+    </label>
+  </div>
+
+  <!-- Plan Details -->
+  <details>
+    <summary>Pełny plan treningu (≈60 min)</summary>
+    <div class="list">
+      <div v-for="(item, i) in fullPlan" :key="i" :class="['row', item.type, { active: item.type !== 'head' && stepIndices[i] === idx }]">
+        <span class="dot" :class="item.type"></span>
+        <span class="idx" v-if="item.type !== 'head'">{{ stepIndices[i] + 1 }}</span>
+        <span class="idx" v-else></span>
+        <span class="name">{{ item.name }}</span>
+        <span class="dur">{{ item.type !== 'head' ? formatTime(item.t) : '' }}</span>
+      </div>
+    </div>
+  </details>
+</div>
+
+<style scoped>
+.resume-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.7);z-index:1000;
+  display:flex;justify-content:center;align-items:center;
+}
+.resume-panel{
+  background:var(--panel);padding:24px;border-radius:14px;
+  max-width:90%;text-align:center;
+}
+.resume-panel h2{margin:0 0 16px;color:var(--text)}
+.resume-panel p{color:var(--muted);margin:0 0 24px;font-size:.95rem}
+.resume-buttons{display:flex;gap:12px}
+.resume-buttons button{flex:1;padding:12px;border:none;border-radius:10px;cursor:pointer;font-weight:600}
+</style>
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      plan: [],
+      basePlan: [],
+      availablePlans: [],
+      selectedPlan: '',
+      steps: [],
+      fullPlan: [],
+      stepIndices: [],
+
+      idx: 0,
+      remaining: 0,
+      total: 0,
+      running: false,
+      tick: null,
+
+      showSettings: false,
+      showResumeDialog: false,
+      resumeDetails: '',
+
+      settings: {
+        exerciseSize: 100,
+        nextSize: 100,
+        workTime: 60,
+        restTime: 30,
+        prepTime: 15,
+        wakeLock: false,
+        tapNavigation: false
+      },
+
+      phaseLabel: {
+        work: 'Ćwiczenie',
+        rest: 'Przerwa',
+        prep: 'Rozgrzewka'
+      },
+
+      planNames: {
+        'plan-0': '60 min - Standardowy',
+        'plan-1': '30 min - Średni',
+        'plan-2': '20 min - Tabata'
+      },
+
+      wakeLockSentinel: null
+    };
+  },
+
+  computed: {
+    currentStep() {
+      return this.steps[this.idx] || { type: 'prep', name: 'Brak' };
+    },
+
+    nextStep() {
+      return this.steps[this.idx + 1] || null;
+    },
+
+    progressPercent() {
+      return this.total > 0 ? (100 * (this.total - this.remaining) / this.total) : 0;
+    }
+  },
+
+  watch: {
+    selectedPlan: {
+      async handler(newVal) {
+        if (newVal) {
+          localStorage.setItem('selectedPlan', newVal);
+          await this.loadPlanFromFile(newVal);
+          this.initApp();
+        }
+      }
+    },
+    'settings.exerciseSize'() { this.applySettings(); this.saveSettings(); },
+    'settings.nextSize'() { this.applySettings(); this.saveSettings(); },
+    'settings.workTime'() { this.updatePlan(); this.saveSettings(); },
+    'settings.restTime'() { this.updatePlan(); this.saveSettings(); },
+    'settings.prepTime'() { this.updatePlan(); this.saveSettings(); this.clearWorkoutState(); },
+    'settings.wakeLock'(val) {
+      this.saveSettings();
+      if (this.running && val) this.requestWakeLock();
+      else if (!val) this.releaseWakeLock();
+    },
+    'settings.tapNavigation'() { this.applySettings(); this.saveSettings(); }
+  },
+
+  methods: {
+    formatTime(s) {
+      const m = Math.floor(s / 60);
+      const x = s % 60;
+      return String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0');
+    },
+
+    async detectAvailablePlans() {
+      this.availablePlans = [];
+      for (let i = 0; i < 10; i++) {
+        try {
+          const response = await fetch(`plans/plan-${i}.json`);
+          if (response.ok) {
+            this.availablePlans.push(`plan-${i}`);
+          }
+        } catch (e) {}
+      }
+      return this.availablePlans.length > 0;
+    },
+
+    async loadPlanFromFile(planName) {
+      try {
+        const response = await fetch(`plans/${planName}.json`);
+        if (!response.ok) throw new Error('Plan not found');
+        this.plan = await response.json();
+        this.basePlan = JSON.parse(JSON.stringify(this.plan));
+      } catch (e) {
+        console.error('Błąd ładowania planu:', e);
+        this.plan = [{ type: 'head', name: 'BŁĄD' }, { type: 'prep', name: 'Nie można załadować planu', t: 60 }];
+        this.basePlan = JSON.parse(JSON.stringify(this.plan));
+      }
+    },
+
+    buildPlan(source = this.basePlan) {
+      const newPlan = [];
+      for (let i = 0; i < source.length; i++) {
+        newPlan.push(source[i]);
+
+        if (source[i].type === 'rest') {
+          let nextSectionIdx = i + 1;
+          while (nextSectionIdx < source.length && source[nextSectionIdx].type !== 'head') {
+            nextSectionIdx++;
+          }
+
+          if (nextSectionIdx < source.length && source[nextSectionIdx].name !== 'SCHŁODZENIE') {
+            newPlan.push({
+              type: 'prep',
+              name: 'Czas na przygotowanie sprzętu/pozycji',
+              t: this.settings.prepTime
+            });
+          }
+        }
+      }
+      return newPlan;
+    },
+
+    updatePlan() {
+      this.plan = this.buildPlan(this.basePlan);
+
+      const S = this.settings.restTime;
+      this.plan.forEach(p => {
+        if (p.type === 'work') p.t = this.settings.workTime;
+        if (p.type === 'rest') p.t = S;
+        if (p.type === 'prep' && p.name === 'Czas na przygotowanie sprzętu/pozycji') p.t = this.settings.prepTime;
+      });
+
+      this.steps = this.plan.filter(p => p.type !== 'head');
+      this.buildPlanList();
+      this.$nextTick(() => this.render());
+    },
+
+    buildPlanList() {
+      this.fullPlan = this.plan;
+      this.stepIndices = [];
+      let stepPtr = 0;
+      this.plan.forEach(p => {
+        if (p.type !== 'head') {
+          this.stepIndices.push(stepPtr++);
+        } else {
+          this.stepIndices.push(-1);
+        }
+      });
+    },
+
+    initApp() {
+      this.steps = this.plan.filter(p => p.type !== 'head');
+      this.idx = 0;
+      this.remaining = this.steps[0]?.t || 0;
+      this.total = this.steps[0]?.t || 0;
+
+      this.loadSettings();
+      this.updatePlan();
+
+      const savedState = this.loadWorkoutState();
+      if (savedState && savedState.selectedPlan === this.selectedPlan) {
+        this.showResumeDialog = true;
+        this.resumeDetails = `${this.steps[savedState.idx]?.name || ''} (${this.formatTime(savedState.remaining)})`;
+      } else {
+        this.clearWorkoutState();
+        this.goto(0);
+      }
+    },
+
+    goto(i) {
+      this.idx = Math.max(0, Math.min(this.steps.length - 1, i));
+      this.total = this.remaining = this.steps[this.idx].t;
+      this.render();
+      this.saveWorkoutState();
+    },
+
+    render() {
+      this.$nextTick(() => {
+        this.applySettings();
+      });
+    },
+
+    calcRemainingTime() {
+      let total = this.remaining;
+      for (let i = this.idx + 1; i < this.steps.length; i++) {
+        total += this.steps[i].t;
+      }
+      return total;
+    },
+
+    tickDown() {
+      this.remaining--;
+
+      if (this.steps[this.idx].type === 'rest' && this.remaining === 15) {
+        this.beep(440, .18);
+        setTimeout(() => this.beep(440, .18), 200);
+      }
+
+      if (this.remaining <= 3 && this.remaining > 0) this.beep(660, .1);
+
+      if (this.remaining <= 0) {
+        this.beep(1046, .25);
+        if (this.idx >= this.steps.length - 1) {
+          this.finish();
+          return;
+        }
+        this.idx++;
+        this.total = this.remaining = this.steps[this.idx].t;
+        this.beep(this.steps[this.idx].type === 'rest' ? 520 : 988, .18);
+      }
+
+      this.render();
+      this.saveWorkoutState();
+    },
+
+    togglePlayPause() {
+      if (this.idx === this.steps.length - 1 && !this.running) {
+        this.idx = 0;
+        this.remaining = this.total = this.steps[0].t;
+        this.render();
+      } else {
+        this.running ? this.pause() : this.start();
+      }
+    },
+
+    start() {
+      if (this.running) return;
+      this.beep(988, .12);
+      this.running = true;
+      this.tick = setInterval(() => this.tickDown(), 1000);
+      if (this.settings.wakeLock) this.requestWakeLock();
+    },
+
+    pause() {
+      this.running = false;
+      clearInterval(this.tick);
+      this.releaseWakeLock();
+    },
+
+    finish() {
+      clearInterval(this.tick);
+      this.running = false;
+      this.releaseWakeLock();
+      this.clearWorkoutState();
+      this.beep(1319, .3);
+    },
+
+    previous() {
+      if (this.remaining < this.steps[this.idx].t - 1) {
+        this.goto(this.idx);
+      } else {
+        this.goto(this.idx - 1);
+      }
+    },
+
+    next() {
+      if (this.idx < this.steps.length - 1) {
+        this.goto(this.idx + 1);
+      } else {
+        this.finish();
+      }
+    },
+
+    handleStageClick(e) {
+      if (!this.settings.tapNavigation) return;
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const width = rect.width;
+      const thirdWidth = width / 3;
+
+      if (x < thirdWidth) {
+        this.previous();
+      } else if (x > width - thirdWidth) {
+        this.next();
+      } else {
+        this.togglePlayPause();
+      }
+    },
+
+    beep(freq = 880, dur = 0.15) {
+      try {
+        const actx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = actx.createOscillator();
+        const g = actx.createGain();
+        o.frequency.value = freq;
+        o.connect(g);
+        g.connect(actx.destination);
+        g.gain.setValueAtTime(.18, actx.currentTime);
+        g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + dur);
+        o.start();
+        o.stop(actx.currentTime + dur);
+      } catch (e) {}
+    },
+
+    openSettings() {
+      this.showSettings = true;
+    },
+
+    closeSettings() {
+      this.showSettings = false;
+    },
+
+    resetSettings() {
+      this.settings = {
+        exerciseSize: 100,
+        nextSize: 100,
+        workTime: 60,
+        restTime: 30,
+        prepTime: 15,
+        wakeLock: false,
+        tapNavigation: false
+      };
+      this.saveSettings();
+      this.updatePlan();
+    },
+
+    loadSettings() {
+      try {
+        const saved = localStorage.getItem('timerSettings');
+        if (saved) {
+          this.settings = { ...this.settings, ...JSON.parse(saved) };
+        }
+      } catch (e) {}
+      this.applySettings();
+    },
+
+    saveSettings() {
+      try {
+        localStorage.setItem('timerSettings', JSON.stringify(this.settings));
+      } catch (e) {}
+    },
+
+    applySettings() {
+      const exerciseScale = this.settings.exerciseSize / 100;
+      const nextScale = this.settings.nextSize / 100;
+
+      const stage = document.getElementById('stage');
+      if (stage) {
+        stage.style.setProperty('--exercise-scale', exerciseScale);
+        stage.style.setProperty('--next-scale', nextScale);
+      }
+    },
+
+    saveWorkoutState() {
+      try {
+        const state = {
+          selectedPlan: this.selectedPlan,
+          idx: this.idx,
+          remaining: this.remaining,
+          total: this.total,
+          running: this.running,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('workoutState', JSON.stringify(state));
+      } catch (e) {}
+    },
+
+    loadWorkoutState() {
+      try {
+        const saved = localStorage.getItem('workoutState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          if (Date.now() - state.timestamp < 3600000) {
+            return state;
+          }
+        }
+      } catch (e) {}
+      return null;
+    },
+
+    clearWorkoutState() {
+      try {
+        localStorage.removeItem('workoutState');
+      } catch (e) {}
+    },
+
+    resumeWorkout() {
+      const savedState = this.loadWorkoutState();
+      if (savedState) {
+        this.idx = savedState.idx;
+        this.remaining = savedState.remaining;
+        this.total = savedState.total;
+        this.running = false;
+        this.showResumeDialog = false;
+        this.render();
+      }
+    },
+
+    startNewWorkout() {
+      this.clearWorkoutState();
+      this.idx = 0;
+      this.remaining = this.steps[0].t;
+      this.total = this.steps[0].t;
+      this.running = false;
+      this.showResumeDialog = false;
+      this.render();
+    },
+
+    async requestWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      try {
+        if (!this.wakeLockSentinel) {
+          this.wakeLockSentinel = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    },
+
+    async releaseWakeLock() {
+      if (this.wakeLockSentinel) {
+        try {
+          await this.wakeLockSentinel.release();
+          this.wakeLockSentinel = null;
+        } catch (e) {}
+      }
+    }
+  },
+
+  async mounted() {
+    const hasPlans = await this.detectAvailablePlans();
+    if (!hasPlans) {
+      this.availablePlans = ['plan-0'];
+    }
+
+    this.selectedPlan = localStorage.getItem('selectedPlan') || this.availablePlans[0];
+    await this.loadPlanFromFile(this.selectedPlan);
+    this.initApp();
+  },
+
+  beforeUnmount() {
+    clearInterval(this.tick);
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
