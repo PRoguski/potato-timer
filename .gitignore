@@ -3,3 +3,9 @@ node_modules/
 .DS_Store
 playwright-report/
 test-results/
+
+# Angular
+/dist
+/node_modules
+.angular/
+*.js.map

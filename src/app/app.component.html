@@ -1,0 +1,203 @@
+<div id="app">
+  <!-- Stage (Timer Display) -->
+  <div id="stage" [ngClass]="getStageClass()" (click)="onStageClick($event)">
+    <div class="progress" [style.width.%]="getProgressPercent()"></div>
+    <div class="counter">{{ getCounterText() }}</div>
+    <div class="phase">{{ getPhaseLabel() }}</div>
+    <img
+      *ngIf="getCurrentStep()?.image"
+      [src]="getCurrentStep()!.image"
+      alt=""
+      class="exercise-image"
+    >
+    <div class="exercise">{{ getCurrentStep()?.name || 'Trening interwałowy' }}</div>
+    <div class="clock">{{ formatTime(timerState.remaining) }}</div>
+    <div class="next" *ngIf="getNextStep()">
+      Następnie: <b>{{ getNextStep()!.name }}</b>
+    </div>
+  </div>
+
+  <!-- Settings Button -->
+  <button id="settingsBtn" (click)="openSettings()">⚙</button>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button
+      class="secondary"
+      id="prevBtn"
+      [disabled]="timerState.idx === 0"
+      (click)="previous()"
+    >
+      ‹ Wstecz
+    </button>
+    <button
+      class="primary"
+      id="startBtn"
+      (click)="togglePlayPause()"
+    >
+      {{ timerState.running ? 'Pauza' : 'Start' }}
+    </button>
+    <button
+      class="secondary"
+      id="nextBtn"
+      (click)="next()"
+    >
+      Dalej ›
+    </button>
+  </div>
+
+  <!-- Remaining Time -->
+  <div id="remainingTime">
+    Pozostało: <span class="time">{{ formatTime(getRemainingTimeTotal()) }}</span>
+  </div>
+
+  <!-- Plan Selector -->
+  <div id="planSelector">
+    <label *ngFor="let plan of availablePlans" class="plan-label">
+      <input
+        type="radio"
+        [value]="plan"
+        [checked]="selectedPlan === plan"
+        (change)="changePlan(plan)"
+      >
+      <span>{{ plan }}</span>
+    </label>
+  </div>
+
+  <!-- Resume Dialog -->
+  <div id="resumeOverlay" *ngIf="showResumeDialog" [style.display]="'flex'">
+    <div id="resumePanel">
+      <h2>Wznowić trening?</h2>
+      <p id="resumeDetails">{{ resumeDetails }}</p>
+      <div style="display:flex;gap:12px">
+        <button class="secondary-btn" (click)="startNewWorkout()">Nowy trening</button>
+        <button class="primary-btn" (click)="resumeWorkout()">Wznów</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Overlay -->
+  <div id="settingsOverlay" [class.open]="settingsOpen">
+    <div id="settingsPanel">
+      <h2 class="settings-title">Ustawienia</h2>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Rozmiar nazwy ćwiczenia</span>
+          <span class="setting-value">{{ settings.exerciseSize }}%</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="settings.exerciseSize"
+          (change)="updateSetting('exerciseSize', settings.exerciseSize)"
+          min="70"
+          max="150"
+          step="5"
+        >
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Rozmiar „Następnie"</span>
+          <span class="setting-value">{{ settings.nextSize }}%</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="settings.nextSize"
+          (change)="updateSetting('nextSize', settings.nextSize)"
+          min="70"
+          max="150"
+          step="5"
+        >
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Czas pracy (sekundy)</span>
+          <span class="setting-value">{{ settings.workTime }}s</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="settings.workTime"
+          (change)="updateSetting('workTime', settings.workTime)"
+          min="30"
+          max="120"
+          step="10"
+        >
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Czas przerwy (sekundy)</span>
+          <span class="setting-value">{{ settings.restTime }}s</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="settings.restTime"
+          (change)="updateSetting('restTime', settings.restTime)"
+          min="15"
+          max="60"
+          step="5"
+        >
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-label">
+          <span>Czas przygotowania (sekundy)</span>
+          <span class="setting-value">{{ settings.prepTime }}s</span>
+        </div>
+        <input
+          type="range"
+          [(ngModel)]="settings.prepTime"
+          (change)="updateSetting('prepTime', settings.prepTime)"
+          min="5"
+          max="30"
+          step="5"
+        >
+      </div>
+
+      <div class="setting-item">
+        <label class="toggle-switch">
+          <input
+            type="checkbox"
+            [(ngModel)]="settings.wakeLock"
+            (change)="updateSetting('wakeLock', settings.wakeLock)"
+          >
+          <span>Nie wyłączaj ekranu podczas treningu</span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <label class="toggle-switch">
+          <input
+            type="checkbox"
+            [(ngModel)]="settings.tapNavigation"
+            (change)="updateSetting('tapNavigation', settings.tapNavigation)"
+          >
+          <span>Klikanie na ekran zamiast przycisków</span>
+        </label>
+      </div>
+
+      <div class="settings-footer">
+        <button class="secondary" (click)="resetSettings()">Resetuj</button>
+        <button class="primary" (click)="closeSettings()">Gotowe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan List -->
+  <details>
+    <summary>Pełny plan treningu (≈{{ formatTime(getRemainingTimeTotal()) }})</summary>
+    <div class="list" id="planList">
+      <div
+        *ngFor="let step of getPlanList(); let i = index"
+        [ngClass]="'row ' + (step.type === 'head' ? 'head' : '') + (timerState.idx === i - 1 ? ' active' : '')"
+      >
+        <div class="dot" [ngClass]="step.type"></div>
+        <div class="idx" *ngIf="step.type !== 'head'">{{ i }}</div>
+        <div class="name">{{ step.name }}</div>
+        <div class="dur" *ngIf="step.t">{{ formatTime(step.t) }}</div>
+      </div>
+    </div>
+  </details>
+</div>
