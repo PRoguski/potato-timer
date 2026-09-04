@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "Potato Timer - Workout interval training application",
   "main": "index.html",
+  "scripts": {
+    "start": "live-server --port=8080 --open=index.html",
+    "dev": "live-server --port=8080 --open=index.html"
+  },
   "keywords": ["timer", "workout", "interval-training"],
   "author": "PRoguski",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
 }
