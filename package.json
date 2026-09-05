@@ -5,12 +5,25 @@
   "main": "index.html",
   "scripts": {
     "start": "live-server --port=8080 --open=index.html",
-    "dev": "live-server --port=8080 --open=index.html"
+    "dev": "live-server --port=8080 --open=index.html",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit"
   },
-  "keywords": ["timer", "workout", "interval-training"],
+  "keywords": [
+    "timer",
+    "workout",
+    "interval-training"
+  ],
   "author": "PRoguski",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.4.1",
     "live-server": "^1.2.2"
   }
 }
