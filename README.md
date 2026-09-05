@@ -4,7 +4,7 @@ Aplikacja webowa: **timer treningu interwałowego**. Bez zależności, bez build
 
 ### Struktura projektu
 
-Dostępne są trzy wersje aplikacji:
+Dostępne są cztery wersje aplikacji:
 
 **Wersja główna (main)** — Vanilla JavaScript:
 - `index.html` — struktura HTML i style CSS
@@ -12,12 +12,18 @@ Dostępne są trzy wersje aplikacji:
 - `plans/plan-*.json` — plany treningowe
 - Bez zależności, 100% offline, natychmiastowe ładowanie
 
-**Wersja alternatywna 1** — Vue.js 3 (branch `feature/vuejs-refactor`):
+**Wersja alternatywna 1** — jQuery (branch `feature/jquery-refactor`):
+- `index-jquery.html` — kompletna aplikacja z jQuery
+- `app-jquery.js` — logika z jQuery metodami (selektory, eventy, AJAX)
+- jQuery z CDN, ~35 KB, offline-first
+- Łatwa manipulacja DOM, przejrzysty kod
+
+**Wersja alternatywna 2** — Vue.js 3 (branch `feature/vuejs-refactor`):
 - `index-vue.html` — kompletna aplikacja w Vue.js 3 (CDN)
 - Single-file component, reaktywne state management
 - 24 KB, Vue.js z CDN, offline-first
 
-**Wersja alternatywna 2** — Angular (branch `feature/angular-refactor`):
+**Wersja alternatywna 3** — Angular (branch `feature/angular-refactor`):
 - `src/` — pełny projekt Angular z TypeScript
 - `src/main.ts` — entry point
 - `src/app/` — komponenty i serwisy
@@ -47,6 +53,14 @@ npm run dev     # Alias dla npm start
 
 Otwiera się w przeglądarce. Bez kompilacji, bez żadnych kroków — wszystko działa offline.
 
+### Wersja jQuery
+
+```bash
+git checkout feature/jquery-refactor
+npm start
+# Otwiera http://localhost:8080 z index-jquery.html
+```
+
 ### Wersja Vue.js
 
 ```bash
@@ -66,15 +80,16 @@ npm run ng:serve
 
 **Porównanie wersji:**
 
-| Aspekt | Vanilla JS | Vue.js | Angular |
-|--------|-----------|--------|---------|
-| Zależności | 0 | 1 (Vue 3 CDN) | Wiele (Angular tooling) |
-| Rozmiar | ~30 KB | ~40 KB | ~200 KB (bundled) |
-| Ładowanie | Natychmiastowe | Natychmiastowe | Wymaga builda |
-| Offline | ✅ 100% | ✅ 100% | ✅ 100% (po buildzie) |
-| Skalowanie | Średnie | Dobre | Świetne |
-| TypeScript | Nie | Nie | ✅ |
-| Reaktywność | Manualna | Automatyczna | Automatyczna (RxJS) |
+| Aspekt | Vanilla JS | jQuery | Vue.js | Angular |
+|--------|-----------|--------|--------|---------|
+| Zależności | 0 | 1 (jQuery CDN) | 1 (Vue 3 CDN) | Wiele (Angular tooling) |
+| Rozmiar | ~30 KB | ~35 KB | ~40 KB | ~200 KB (bundled) |
+| Ładowanie | Natychmiastowe | Natychmiastowe | Natychmiastowe | Wymaga builda |
+| Offline | ✅ 100% | ✅ 100% | ✅ 100% | ✅ 100% (po buildzie) |
+| Skalowanie | Średnie | Średnie | Dobre | Świetne |
+| TypeScript | ❌ | ❌ | ❌ | ✅ |
+| Reaktywność | Manualna | Manualna | Automatyczna | Automatyczna (RxJS) |
+| Złożoność | Minimalna | Niska | Średnia | Wysoka |
 
 ## Struktura pliku (Vanilla JS)
 
@@ -275,6 +290,23 @@ Prep time między ćwiczeniami dodawany jest **dynamicznie** przez `buildPlan()`
 - **TypeScript**: nie
 - **Uruchamianie**: `npm start`
 
+### jQuery (`feature/jquery-refactor` branch)
+
+- **Struktura**: `index-jquery.html` + `app-jquery.js`
+- **Rozmiar**: ~35 KB (HTML + JS + jQuery runtime z CDN)
+- **Zależności**: jQuery 3.7.1 z CDN (https://code.jquery.com)
+- **Ładowanie**: natychmiastowe, bez builda
+- **Offline**: 100% offline (jQuery z CDN)
+- **Reaktywność**: manualne, ale z jQuery selektorami i metodami
+- **TypeScript**: nie
+- **DOM API**: jQuery $(), .on(), .change(), .ajax()
+- **Zalety**: 
+  - Łatwa manipulacja DOM
+  - Przejrzysty, czytelny kod
+  - Mniej boilerplate'u niż vanilla
+  - Krótsze event handlery
+- **Uruchamianie**: `npm start` (przechodzi na `index-jquery.html`)
+
 ### Vue.js 3 (`feature/vuejs-refactor` branch)
 
 - **Struktura**: `index-vue.html` (single-file component)
@@ -307,14 +339,23 @@ Prep time między ćwiczeniami dodawany jest **dynamicznie** przez `buildPlan()`
 - **Vanilla JS** — jeśli chcesz:
   - Zero dependencies, najszybszy ładunek
   - Pełny offline bez żadnych polegań
-  - Najprostszy kod do edycji
+  - Najprostszy czysty JavaScript
   - Maksymalną wydajność na słabych urządzeniach
+  - Żaden framework, żadne abstrakcje
+
+- **jQuery** — jeśli chcesz:
+  - Łatwa manipulacja DOM-em
+  - Krótsza składnia niż vanilla ($ vs document.query)
+  - Przyjemny API dla selektorów i event handlerów
+  - Nadal prosty kod, ale bardziej czytelny
+  - Historyczne wsparcie dla starszych przeglądarek
 
 - **Vue.js** — jeśli chcesz:
   - Reactive data binding (automatyczne UI updates)
   - Łatwy kod do czytania i rozszerzenia
   - Single-file component (logika + template razem)
   - Bez builda, bez TypeScript
+  - Najlepsza równowaga między prostotą a mocą
 
 - **Angular** — jeśli chcesz:
   - Profesjonalny framework dla dużych projektów
