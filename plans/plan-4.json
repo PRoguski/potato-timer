@@ -1,0 +1,47 @@
+[
+  {
+    "type": "head",
+    "name": "GOTOWOŚĆ"
+  },
+  {
+    "type": "input",
+    "name": "Sprawdzenie sprzętu"
+  },
+  {
+    "type": "head",
+    "name": "RUNDA 1"
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "input",
+    "name": "Czy jesteś gotowy na następne ćwiczenie?"
+  },
+  {
+    "type": "work",
+    "name": "Pompki",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 30
+  },
+  {
+    "type": "head",
+    "name": "SCHŁODZENIE"
+  },
+  {
+    "type": "prep",
+    "name": "Rozciąganie",
+    "t": 120
+  }
+]
