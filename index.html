@@ -17,6 +17,8 @@
     --rest-ink:#04222f;
     --prep:#f4a742;      /* rozgrzewka/schłodzenie */
     --prep-ink:#2a1a02;
+    --input:#a78bfa;     /* input/gotowy */
+    --input-ink:#2d1b4e;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
@@ -35,6 +37,7 @@
   #stage.work{background:var(--work);color:var(--work-ink)}
   #stage.rest{background:var(--rest);color:var(--rest-ink)}
   #stage.prep{background:var(--prep);color:var(--prep-ink)}
+  #stage.input{background:var(--input);color:var(--input-ink);cursor:pointer}
   #stage.done{background:var(--panel);color:var(--text)}
 
   .phase{font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;opacity:.72}
@@ -87,7 +90,7 @@
   .row.head .name{font-weight:800;color:var(--text);letter-spacing:.04em}
   .dot{width:8px;height:8px;border-radius:50%;flex:none}
   .dot.work{background:var(--work)} .dot.rest{background:var(--rest)}
-  .dot.prep{background:var(--prep)} .dot.head{background:transparent}
+  .dot.prep{background:var(--prep)} .dot.input{background:var(--input)} .dot.head{background:transparent}
 
   /* ===== Ustawienia ===== */
   #settingsBtn{

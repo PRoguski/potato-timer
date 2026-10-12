@@ -8,7 +8,8 @@ const planNames = {
   'plan-0': '60 min - Standardowy',
   'plan-1': '30 min - Średni',
   'plan-2': '20 min - Tabata',
-  'plan-3': '27 min - Worek & Pompki'
+  'plan-3': '27 min - Worek & Pompki',
+  'plan-4': 'Demo - Input ćwiczenia'
 };
 
 async function detectAvailablePlans(){
@@ -125,7 +126,7 @@ async function initializePlanSelector(){
 
 // Globalne zmienne
 let steps = [];
-const phaseLabel = {work:'Ćwiczenie', rest:'Przerwa', prep:'Rozgrzewka'};
+const phaseLabel = {work:'Ćwiczenie', rest:'Przerwa', prep:'Rozgrzewka', input:'GOTOWY?'};
 const $ = id => document.getElementById(id);
 
 // DOM elements - inicjalizowane w initApp
@@ -168,9 +169,11 @@ function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')
 
 // oblicz całkowity pozostały czas treningu
 function calcRemainingTime(){
-  let total = remaining; // obecny krok
+  let total = (steps[idx].type==='input') ? 0 : remaining; // obecny krok (input steps nie mają czasu)
   for(let i=idx+1; i<steps.length; i++){
-    total += steps[i].t;
+    if(steps[i].type!=='input'){ // Pomiń kroki input
+      total += steps[i].t;
+    }
   }
   return total;
 }
@@ -193,11 +196,18 @@ function render(){
   stage.className=step.type;
   phaseEl.textContent=phaseLabel[step.type]||'';
   exEl.textContent=step.name;
-  clockEl.textContent=fmt(remaining);
   counterEl.textContent=(idx+1)+' / '+steps.length;
-  const nxt=steps[idx+1];
-  nextEl.innerHTML = nxt ? 'Następnie: <b>'+nxt.name+'</b>' : 'To ostatni element 💪';
-  barEl.style.width = (100*(total-remaining)/total)+'%';
+
+  if(step.type==='input'){
+    clockEl.textContent='';
+    nextEl.textContent='Kliknij aby kontynuować';
+    barEl.style.width='100%';
+  }else{
+    clockEl.textContent=fmt(remaining);
+    const nxt=steps[idx+1];
+    nextEl.innerHTML = nxt ? 'Następnie: <b>'+nxt.name+'</b>' : 'To ostatni element 💪';
+    barEl.style.width = (total>0) ? (100*(total-remaining)/total)+'%' : '100%';
+  }
 
   // Wyświetl GIF jeśli istnieje
   const imgEl = $('exerciseImage');
@@ -226,6 +236,13 @@ function goto(i){
 }
 
 function tickDown(){
+  // Skip countdown for input steps - they require user interaction
+  if(steps[idx].type==='input'){
+    render();
+    saveWorkoutState();
+    return;
+  }
+
   remaining--;
   // ostrzeżenie 15 s przed końcem przerwy
   if(steps[idx].type==='rest' && remaining===15){ beep(440,.18); setTimeout(()=>beep(440,.18),200); }
@@ -243,6 +260,13 @@ function tickDown(){
 
 function start(){
   if(running) return;
+
+  // Don't start countdown for input steps - they require user click
+  if(steps[idx].type==='input'){
+    beep(988,.12);
+    return;
+  }
+
   beep(988,.12);
   running=true; startBtn.textContent='Pauza'; startBtn.classList.remove('primary');
   tick=setInterval(tickDown,1000);
@@ -277,6 +301,16 @@ function setupEventListeners(){
 
   // Tap navigation on timer display
   stage.onclick = (e) => {
+    // For input steps, any click advances to next step
+    if(steps[idx].type==='input'){
+      if(idx<steps.length-1){
+        goto(idx+1);
+      }else{
+        finish();
+      }
+      return;
+    }
+
     if(!settings.tapNavigation) return;
     const rect = stage.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -310,8 +344,9 @@ function buildPlanList(){
     }else{
       const si=stepPtr++;
       row.className='row'; row.dataset.step=si;
+      const duration = p.type==='input' ? '—' : fmt(p.t);
       row.innerHTML='<span class="dot '+p.type+'"></span><span class="idx">'+(si+1)+'</span>'+
-        '<span class="name">'+p.name+'</span><span class="dur">'+fmt(p.t)+'</span>';
+        '<span class="name">'+p.name+'</span><span class="dur">'+duration+'</span>';
       row.onclick=()=>{ pause(); goto(si); };
     }
     listEl.appendChild(row);
@@ -445,6 +480,7 @@ function updatePlan(){
   plan.forEach(p => {
     if(p.type === 'work') p.t = settings.workTime;
     if(p.type === 'rest') p.t = S;
+    if(p.type === 'input') p.t = 0; // Input steps have no duration
     // prepTime is already set in buildPlan(), ale możemy go zaktualizować w każdej iteracji
     if(p.type === 'prep' && p.name === 'Czas na przygotowanie sprzętu/pozycji') p.t = settings.prepTime;
   });
@@ -465,8 +501,9 @@ function updatePlan(){
     }else{
       const si=stepPtr++;
       row.className='row'; row.dataset.step=si;
+      const duration = p.type==='input' ? '—' : fmt(p.t);
       row.innerHTML='<span class="dot '+p.type+'"></span><span class="idx">'+(si+1)+'</span>'+
-        '<span class="name">'+p.name+'</span><span class="dur">'+fmt(p.t)+'</span>';
+        '<span class="name">'+p.name+'</span><span class="dur">'+duration+'</span>';
       row.onclick=()=>{ pause(); goto(si); };
     }
     listEl.appendChild(row);
