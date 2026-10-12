@@ -5,32 +5,36 @@
   },
   {
     "type": "prep",
-    "name": "Skakanka spokojnie",
-    "t": 60
+    "name": "Skakanka",
+    "t": 60,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "prep",
-    "name": "Krążenia ramion",
-    "t": 60
+    "name": "Rozciąganie i obroty",
+    "t": 60,
+    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
   },
   {
     "type": "head",
-    "name": "RUNDA 1"
-  },
-  {
-    "type": "work",
-    "name": "Skakanka",
-    "t": 45
-  },
-  {
-    "type": "rest",
-    "name": "Przerwa",
-    "t": 20
+    "name": "TRENING"
   },
   {
     "type": "work",
     "name": "Pompki",
-    "t": 45
+    "t": 45,
+    "image": "https://media.giphy.com/media/3o85xIO33l7RlmLqqI/giphy.gif"
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 20
+  },
+  {
+    "type": "work",
+    "name": "Przysiady",
+    "t": 45,
+    "image": "https://media.giphy.com/media/3o6ZtpWB2Rv7DaQ4W4/giphy.gif"
   },
   {
     "type": "rest",
@@ -40,7 +44,8 @@
   {
     "type": "work",
     "name": "Skakanka",
-    "t": 45
+    "t": 45,
+    "image": "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
   },
   {
     "type": "rest",
@@ -49,8 +54,9 @@
   },
   {
     "type": "work",
-    "name": "Przysiad",
-    "t": 45
+    "name": "Deski boczne",
+    "t": 45,
+    "image": "https://media.giphy.com/media/3o7TKV8Ye16CIrClxu/giphy.gif"
   },
   {
     "type": "rest",
@@ -64,6 +70,7 @@
   {
     "type": "prep",
     "name": "Rozciąganie",
-    "t": 120
+    "t": 120,
+    "image": "https://media.giphy.com/media/l3q2K5jin38sMrmNO/giphy.gif"
   }
 ]

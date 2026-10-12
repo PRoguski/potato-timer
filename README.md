@@ -1,8 +1,34 @@
 # Trening — Timer
 
-Jednoplikowa aplikacja webowa: **timer treningu interwałowego**. Cały kod
-(HTML + CSS + JS) siedzi w `trening-timer.html`. Bez zależności, bez builda,
-bez internetu — otwiera się bezpośrednio w przeglądarce (też na telefonie).
+Aplikacja webowa: **timer treningu interwałowego**. Bez zależności, bez builda, bez internetu — otwiera się bezpośrednio w przeglądarce (też na telefonie).
+
+### Struktura projektu
+
+Dostępne są cztery wersje aplikacji:
+
+**Wersja główna (main)** — Vanilla JavaScript:
+- `index.html` — struktura HTML i style CSS
+- `app.js` — logika aplikacji (20 KB)
+- `plans/plan-*.json` — plany treningowe
+- Bez zależności, 100% offline, natychmiastowe ładowanie
+
+**Wersja alternatywna 1** — jQuery (branch `feature/jquery-refactor`):
+- `index-jquery.html` — kompletna aplikacja z jQuery
+- `app-jquery.js` — logika z jQuery metodami (selektory, eventy, AJAX)
+- jQuery z CDN, ~35 KB, offline-first
+- Łatwa manipulacja DOM, przejrzysty kod
+
+**Wersja alternatywna 2** — Vue.js 3 (branch `feature/vuejs-refactor`):
+- `index-vue.html` — kompletna aplikacja w Vue.js 3 (CDN)
+- Single-file component, reaktywne state management
+- 24 KB, Vue.js z CDN, offline-first
+
+**Wersja alternatywna 3** — Angular (branch `feature/angular-refactor`):
+- `src/` — pełny projekt Angular z TypeScript
+- `src/main.ts` — entry point
+- `src/app/` — komponenty i serwisy
+- Wymaga builda, Angular CLI, RxJS observables
+- Najcięższa ale najbardziej skalowalna
 
 ## Sprzęt użytkownika / założenia treningu
 
@@ -15,13 +41,66 @@ Struktura:
 
 Ćwiczenia siłowe: pompki, rozpiętki z gumą, przysiady, wiosłowanie, wykroki, martwy ciąg, plank.
 
-## Struktura pliku
+## Uruchomienie
 
-Wszystko w jednym `trening-timer.html`:
-- **`<head>`** — metadata, charset UTF-8, viewport dla mobile (safe-area-inset dla notchy).
-- **`<style>`** — CSS Grid/Flexbox, motyw ciemny, zmienne kolorów (--bg, --work, --rest, --prep), responsive (clamp).
-- **`const plan`** — tablica kroków treningu (źródło prawdy). Edycja treningu = edycja tej tablicy.
-- **`<script>`** — timer engine, WebAudio synth, event handlers, render pipeline, lista planu.
+### Wersja główna (Vanilla JS)
+
+```bash
+npm start       # Uruchamia live-server na http://localhost:8080
+# lub
+npm run dev     # Alias dla npm start
+```
+
+Otwiera się w przeglądarce. Bez kompilacji, bez żadnych kroków — wszystko działa offline.
+
+### Wersja jQuery
+
+```bash
+git checkout feature/jquery-refactor
+npm start
+# Otwiera http://localhost:8080 z index-jquery.html
+```
+
+### Wersja Vue.js
+
+```bash
+git checkout feature/vuejs-refactor
+npm start
+# Otwiera http://localhost:8080 z index-vue.html
+```
+
+### Wersja Angular
+
+```bash
+git checkout feature/angular-refactor
+npm install     # Zainstaluj Angular dependencies
+npm run ng:serve
+# Otwiera http://localhost:4200 z Angular dev server
+```
+
+**Porównanie wersji:**
+
+| Aspekt | Vanilla JS | jQuery | Vue.js | Angular |
+|--------|-----------|--------|--------|---------|
+| Zależności | 0 | 1 (jQuery CDN) | 1 (Vue 3 CDN) | Wiele (Angular tooling) |
+| Rozmiar | ~30 KB | ~35 KB | ~40 KB | ~200 KB (bundled) |
+| Ładowanie | Natychmiastowe | Natychmiastowe | Natychmiastowe | Wymaga builda |
+| Offline | ✅ 100% | ✅ 100% | ✅ 100% | ✅ 100% (po buildzie) |
+| Skalowanie | Średnie | Średnie | Dobre | Świetne |
+| TypeScript | ❌ | ❌ | ❌ | ✅ |
+| Reaktywność | Manualna | Manualna | Automatyczna | Automatyczna (RxJS) |
+| Złożoność | Minimalna | Niska | Średnia | Wysoka |
+
+## Struktura pliku (Vanilla JS)
+
+Rozdzielone na dwa pliki:
+- **`index.html`** — struktura HTML i style CSS (Grid/Flexbox, motyw ciemny, zmienne kolorów)
+- **`app.js`** — logika aplikacji:
+  - Timer engine (initApp, goto, tickDown, render)
+  - WebAudio synth do dźwięków (beep)
+  - Event handlers (przyciski, ustawienia)
+  - Persistence (localStorage — ustawienia, stan treningu)
+  - Plan builder (dynamiczna wstawka prep time pomiędzy przerwy i ćwiczenia)
 
 ## Model danych
 
@@ -134,10 +213,23 @@ Klik w rząd → `pause()` → `goto(idx)`. Active row: `.active` (highlight tł
 Edytuj `const plan` — dodaj/usuń/modyfikuj obiekty. Kiedy `type !== 'head'`, liczy się czas.
 Uruchom stronę → automatycznie wylicza długość (`steps.length`) i wstawia w countery.
 
+## Implementowane funkcje
+
+✅ **Timer interwałowy** — odpoczynek, ćwiczenia, rozgrzewka, schłodzenie  
+✅ **Czas przygotowania** — automatyczne przerwy do przygotowania sprzętu (5-30 s, konfigurowalnie)  
+✅ **Gif demonstrujące** — animacje z Giphy dla każdego ćwiczenia  
+✅ **Dźwięki** — WebAudio synth, ostrzeżenia przed koncem, sygnały przejść  
+✅ **Ustawienia** — suwaki: czas pracy, przerwy, przygotowania; przełączniki: ekran aktywny, nawigacja tapem  
+✅ **Wznowienie treningu** — localStorage, resume dialog po przeładowaniu  
+✅ **Navigacja** — przyciski, tapnięcie w trzy strefy ekranu, lista planu z jump-to  
+✅ **Responsive** — mobile-first, safe-area-inset dla notchy  
+✅ **Dark theme** — ciemne kolory, zmienne CSS  
+✅ **Offline** — brak zależności, wszystko działa bez internetu (poza gifami)  
+
 ## Konwencje
 
 - **Interfejs po polsku** — utrzymuj polski w UI i komunikatach (phase labels, przycisk, next text).
-- **Zero zależności** — trzymaj jako jeden plik `.html`, offline-first, brak CDN.
+- **Zero zależności** (Vanilla JS) — offline-first, brak npm w runtime.
 - **Kolory semantyczne**:
   - Zielony = praca/wysiłek.
   - Niebieski = przerwa/regeneracja.
@@ -157,13 +249,117 @@ function fmt(s) {
 }
 ```
 
+## Plany treningowe
+
+Plany są przechowywane w JSON (`plans/plan-*.json`):
+- `plan-0.json` — Standardowy (60 min, 4 rundy)
+- `plan-1.json` — Alternatywny (do zdefiniowania)
+- `plan-2.json` — Alternatywny (do zdefiniowania)
+
+Każdy plan to tablica kroków:
+```json
+[
+  { "type": "head", "name": "ROZGRZEWKA" },
+  { "type": "prep", "name": "Skakanka spokojnie", "t": 120, "image": "https://..." },
+  { "type": "work", "name": "Pompki", "t": 60, "image": "https://..." },
+  { "type": "rest", "name": "Przerwa", "t": 30 }
+]
+```
+
+Prep time między ćwiczeniami dodawany jest **dynamicznie** przez `buildPlan()` w app.js — nie modyfikuje JSON.
+
 ## Możliwe kolejne kroki (backlog)
 
 - **Głosowe zapowiadanie** (Web Speech API / SpeechSynthesis) — czytanie nazwy ćwiczenia.
-- **Wake Lock API** — blokada wygaszania ekranu podczas treningu.
-- **Suwaki personalizacji** — długość przerwy, czas pracy, liczba rund.
-- **localStorage** — zapamiętanie ustawień, ostatniej pozycji, preferencji dzwiękowych.
-- **Ciemny/jasny motyw** — przełącznik lub auto wg `prefers-color-scheme`.
 - **Vibration API** — wibracja na mobilach zamiast/oprócz dźwięków.
 - **Statystyka** — liczba ukończonych treningów, kalendarz.
-- **Edytor planu** — UI do tworzenia własnych treningów bez edycji kodu.
+- **Edytor planu** — UI do tworzenia własnych treningów bez edycji JSON.
+- **Eksport/Import** — udostępnianie planów między użytkownikami.
+- **Build step** — Vite/Webpack dla Vue.js wersji (zamiast CDN).
+
+## Wersje aplikacji
+
+### Vanilla JavaScript (`main` branch)
+
+- **Struktura**: `index.html` + `app.js`
+- **Rozmiar**: ~30 KB (HTML + JS)
+- **Zależności**: zero, live-server tylko do dev
+- **Ładowanie**: natychmiastowe, bez builda
+- **Offline**: 100% funkcjonalny bez internetu
+- **Reaktywność**: manualne DOM updates
+- **TypeScript**: nie
+- **Uruchamianie**: `npm start`
+
+### jQuery (`feature/jquery-refactor` branch)
+
+- **Struktura**: `index-jquery.html` + `app-jquery.js`
+- **Rozmiar**: ~35 KB (HTML + JS + jQuery runtime z CDN)
+- **Zależności**: jQuery 3.7.1 z CDN (https://code.jquery.com)
+- **Ładowanie**: natychmiastowe, bez builda
+- **Offline**: 100% offline (jQuery z CDN)
+- **Reaktywność**: manualne, ale z jQuery selektorami i metodami
+- **TypeScript**: nie
+- **DOM API**: jQuery $(), .on(), .change(), .ajax()
+- **Zalety**: 
+  - Łatwa manipulacja DOM
+  - Przejrzysty, czytelny kod
+  - Mniej boilerplate'u niż vanilla
+  - Krótsze event handlery
+- **Uruchamianie**: `npm start` (przechodzi na `index-jquery.html`)
+
+### Vue.js 3 (`feature/vuejs-refactor` branch)
+
+- **Struktura**: `index-vue.html` (single-file component)
+- **Rozmiar**: ~40 KB (app code + Vue 3 runtime z CDN)
+- **Zależności**: Vue 3 z CDN (https://cdnjs.cloudflare.com)
+- **Ładowanie**: natychmiastowe, bez builda
+- **Offline**: 100% offline (Vue z CDN)
+- **Reaktywność**: automatyczna, data properties + watchers
+- **TypeScript**: nie
+- **Uruchamianie**: `npm start` (przechodzi na `index-vue.html`)
+
+### Angular (`feature/angular-refactor` branch)
+
+- **Struktura**: pełny Angular projekt z TypeScript
+  - `src/main.ts` — entry point
+  - `src/app/app.component.ts` — main component
+  - `src/app/services/` — timer, settings, plans services
+  - `angular.json`, `tsconfig.json` — konfiguracja
+- **Rozmiar**: ~200+ KB (bundled), ale modularne
+- **Zależności**: Angular, TypeScript, RxJS, webpack
+- **Ładowanie**: wymaga builda (`npm run ng:build`)
+- **Offline**: 100% offline (po buildzie)
+- **Reaktywność**: automatyczna, RxJS BehaviorSubjects + observables
+- **TypeScript**: ✅ w pełni
+- **Skalowanie**: najlepsze (dependency injection, services, components)
+- **Uruchamianie**: `npm run ng:serve` (dev server na 4200)
+
+**Koja wersja wybrać?**
+
+- **Vanilla JS** — jeśli chcesz:
+  - Zero dependencies, najszybszy ładunek
+  - Pełny offline bez żadnych polegań
+  - Najprostszy czysty JavaScript
+  - Maksymalną wydajność na słabych urządzeniach
+  - Żaden framework, żadne abstrakcje
+
+- **jQuery** — jeśli chcesz:
+  - Łatwa manipulacja DOM-em
+  - Krótsza składnia niż vanilla ($ vs document.query)
+  - Przyjemny API dla selektorów i event handlerów
+  - Nadal prosty kod, ale bardziej czytelny
+  - Historyczne wsparcie dla starszych przeglądarek
+
+- **Vue.js** — jeśli chcesz:
+  - Reactive data binding (automatyczne UI updates)
+  - Łatwy kod do czytania i rozszerzenia
+  - Single-file component (logika + template razem)
+  - Bez builda, bez TypeScript
+  - Najlepsza równowaga między prostotą a mocą
+
+- **Angular** — jeśli chcesz:
+  - Profesjonalny framework dla dużych projektów
+  - Dependency injection, serwisy, komponenty
+  - TypeScript + strong typing
+  - Skalowalne rozszerzenia
+  - Best practices dla enterprise
