@@ -7,7 +7,8 @@ let currentPlanIndex = 0;
 const planNames = {
   'plan-0': '60 min - Standardowy',
   'plan-1': '30 min - Średni',
-  'plan-2': '20 min - Tabata'
+  'plan-2': '20 min - Tabata',
+  'plan-3': '27 min - Worek & Pompki'
 };
 
 async function detectAvailablePlans(){
