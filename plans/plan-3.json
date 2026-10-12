@@ -15,7 +15,51 @@
   },
   {
     "type": "head",
-    "name": "TRENING"
+    "name": "RUNDA 1"
+  },
+  {
+    "type": "work",
+    "name": "Worek",
+    "t": 180
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 60
+  },
+  {
+    "type": "work",
+    "name": "Pompki",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 60
+  },
+  {
+    "type": "work",
+    "name": "Step-upy z obciążeniem",
+    "t": 180
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 60
+  },
+  {
+    "type": "work",
+    "name": "Skakanka",
+    "t": 60
+  },
+  {
+    "type": "rest",
+    "name": "Przerwa",
+    "t": 60
+  },
+  {
+    "type": "head",
+    "name": "RUNDA 2"
   },
   {
     "type": "work",
