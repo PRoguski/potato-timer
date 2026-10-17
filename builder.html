@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Trening — Kreator</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#161c26;
+    --line:#26303d;
+    --text:#eef2f6;
+    --muted:#8b98a8;
+    --work:#c6ff3d;
+    --work-ink:#12200a;
+    --prep:#f4a742;
+    --danger:#f87171;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px);
+    max-width:1100px;margin:0 auto;
+  }
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  h1{font-size:1.4rem;margin:0}
+  h2{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+  a.back{color:var(--muted);text-decoration:none;font-weight:700;font-size:.9rem}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .hint{color:var(--muted);font-size:.85rem;margin:0 0 12px}
+
+  input[type="text"],input[type="number"]{
+    width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:10px;font:inherit;font-size:.95rem;
+  }
+  input:focus{outline:2px solid var(--work);outline-offset:-1px}
+  input[type="number"]{width:72px;text-align:center}
+
+  button{
+    border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;
+    font-size:.9rem;color:var(--text);background:var(--bg);cursor:pointer;
+  }
+  button:active{transform:scale(.97)}
+  button.primary{background:var(--work);color:var(--work-ink);border-color:var(--work)}
+  button.del{color:var(--danger);padding:6px 10px;background:transparent;border-color:transparent;font-size:1rem}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+  /* Listy rozgrzewki / schłodzenia */
+  .item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .item .unit{color:var(--muted);font-size:.85rem}
+
+  /* Tabela rund */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse;min-width:100%}
+  th,td{padding:4px;text-align:left;vertical-align:middle}
+  th{font-size:.8rem;color:var(--work);letter-spacing:.06em;white-space:nowrap}
+  th .del{font-size:.85rem}
+  td.idx{color:var(--muted);font-weight:700;font-size:.85rem;text-align:right;padding-right:8px}
+  td input{min-width:150px}
+
+  .summary{color:var(--muted);font-size:.85rem;margin-top:10px}
+  .summary b{color:var(--text)}
+
+  textarea{
+    width:100%;min-height:220px;background:var(--bg);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;
+  }
+  .file{display:flex;gap:8px;align-items:center}
+  .file input{max-width:180px}
+  .toast{color:var(--work);font-size:.85rem;min-height:1.2em;margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kreator treningu</h1>
+  <a class="back" href="index.html">‹ Timer</a>
+</header>
+
+<section>
+  <h2>Rozgrzewka</h2>
+  <div id="warmupList"></div>
+  <div class="actions"><button id="addWarmup">+ pozycja</button></div>
+</section>
+
+<section>
+  <h2>Rundy</h2>
+  <p class="hint">Czas pracy i przerwy ustawiasz suwakami w timerze. Puste pola są pomijane.</p>
+  <div class="table-wrap"><table id="roundsTable"></table></div>
+  <div class="actions">
+    <button id="addRow">+ ćwiczenie</button>
+    <button id="addRound">+ runda</button>
+  </div>
+  <div class="summary" id="summary"></div>
+</section>
+
+<section>
+  <h2>Schłodzenie</h2>
+  <div id="cooldownList"></div>
+  <div class="actions"><button id="addCooldown">+ pozycja</button></div>
+</section>
+
+<section>
+  <h2>JSON</h2>
+  <div class="file">
+    <input type="text" id="fileName" aria-label="Nazwa pliku">
+    <span class="unit">.json</span>
+  </div>
+  <div class="actions">
+    <button class="primary" id="copyBtn">Kopiuj</button>
+    <button id="downloadBtn">Pobierz</button>
+    <button id="resetBtn">Wyczyść</button>
+  </div>
+  <div class="toast" id="toast"></div>
+  <textarea id="output" readonly spellcheck="false"></textarea>
+</section>
+
+<script src="builder.js"></script>
+</body>
+</html>
