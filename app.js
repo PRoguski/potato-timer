@@ -12,6 +12,21 @@ const planNames = {
   'plan-4': 'Demo - Input ćwiczenia'
 };
 
+const CUSTOM_PLANS_KEY = 'customTrainings'; // treningi zapisane w kreatorze (builder.html)
+const CUSTOM_PLAN_PREFIX = 'custom:';
+
+function getCustomTrainings(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(CUSTOM_PLANS_KEY));
+    return (raw && typeof raw === 'object') ? raw : {};
+  }catch(e){ return {}; }
+}
+
+function planDisplayName(planName){
+  if(planName.startsWith(CUSTOM_PLAN_PREFIX)) return '🛠 ' + planName.slice(CUSTOM_PLAN_PREFIX.length);
+  return planNames[planName] || planName;
+}
+
 async function detectAvailablePlans(){
   availablePlans = [];
   // Spróbuj załadować plan-0, plan-1, plan-2, itd.
@@ -23,14 +38,25 @@ async function detectAvailablePlans(){
       }
     }catch(e){}
   }
+  // Treningi zapisane w kreatorze (localStorage), dołączane po plikowych
+  Object.keys(getCustomTrainings()).forEach(name => {
+    availablePlans.push(CUSTOM_PLAN_PREFIX + name);
+  });
   return availablePlans.length > 0;
 }
 
 async function loadPlanFromFile(planName){
   try{
-    const response = await fetch(`plans/${planName}.json`);
-    if(!response.ok) throw new Error('Plan not found');
-    plan = await response.json();
+    if(planName.startsWith(CUSTOM_PLAN_PREFIX)){
+      const name = planName.slice(CUSTOM_PLAN_PREFIX.length);
+      const custom = getCustomTrainings()[name];
+      if(!custom) throw new Error('Custom plan not found');
+      plan = custom.plan;
+    }else{
+      const response = await fetch(`plans/${planName}.json`);
+      if(!response.ok) throw new Error('Plan not found');
+      plan = await response.json();
+    }
     // Zapisz oryginalny plan bez kroków przygotowania
     basePlan = JSON.parse(JSON.stringify(plan));
     currentPlanIndex = availablePlans.indexOf(planName);
@@ -64,7 +90,7 @@ async function initializePlanSelector(){
   availablePlans.forEach((planName, idx) => {
     const label = document.createElement('label');
     label.innerHTML = `<input type="radio" name="plan" value="${planName}" ${planName === savedPlan ? 'checked' : ''}>
-      <span>${planNames[planName] || planName}</span>`;
+      <span>${planDisplayName(planName)}</span>`;
     label.onchange = async (e) => {
       if(e.target.checked){
         localStorage.setItem('selectedPlan', planName);
@@ -444,10 +470,24 @@ function resetSettings(){
   applySettings();
 }
 
+// Nazwa automatycznie wstawianego kroku przygotowania (po niej rozpoznajemy go przy zmianie ustawień)
+const PREP_STEP_NAME = 'Przygotowanie 🧰';
+
 // Buduj plan z dynamicznym czasem przygotowania
 function buildPlan(source = basePlan){
   const newPlan = [];
+  const prepStep = () => ({ type: 'prep', name: PREP_STEP_NAME, t: settings.prepTime });
+  // Plany z kreatora mają przy ćwiczeniach pole prep: true/false — wtedy decyduje ćwiczenie.
+  // Starsze plany (bez tego pola) zachowują dotychczasową regułę "po przerwie".
+  const perExercise = source.some(p => p.type === 'work' && typeof p.prep === 'boolean');
+
   for(let i = 0; i < source.length; i++){
+    if(perExercise){
+      if(source[i].type === 'work' && source[i].prep) newPlan.push(prepStep());
+      newPlan.push(source[i]);
+      continue;
+    }
+
     newPlan.push(source[i]);
 
     // Dodaj przygotowanie po przerwie, ale nie przed schłodzeniem
@@ -460,11 +500,7 @@ function buildPlan(source = basePlan){
 
       // Jeśli następna sekcja istnieje i NIE jest schłodzeniem, dodaj przygotowanie
       if(nextSectionIdx < source.length && source[nextSectionIdx].name !== 'SCHŁODZENIE'){
-        newPlan.push({
-          type: 'prep',
-          name: 'Czas na przygotowanie sprzętu/pozycji',
-          t: settings.prepTime
-        });
+        newPlan.push(prepStep());
       }
     }
   }
@@ -478,11 +514,12 @@ function updatePlan(){
   // Zaktualizuj plan z nowymi czasami
   const S = settings.restTime;
   plan.forEach(p => {
-    if(p.type === 'work') p.t = settings.workTime;
+    // fixed: true = czas ustawiony w kreatorze dla tego ćwiczenia, suwak go nie nadpisuje
+    if(p.type === 'work' && !p.fixed) p.t = settings.workTime;
     if(p.type === 'rest') p.t = S;
     if(p.type === 'input') p.t = 0; // Input steps have no duration
     // prepTime is already set in buildPlan(), ale możemy go zaktualizować w każdej iteracji
-    if(p.type === 'prep' && p.name === 'Czas na przygotowanie sprzętu/pozycji') p.t = settings.prepTime;
+    if(p.type === 'prep' && p.name === PREP_STEP_NAME) p.t = settings.prepTime;
   });
 
   // Aktualizuj steps array z nowym planem

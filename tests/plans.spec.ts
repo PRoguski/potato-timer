@@ -252,7 +252,7 @@ test.describe('Workout Plans', () => {
       await page.waitForTimeout(200);
 
       // Look for correct prep step name
-      const prepSteps = page.locator('#planList .step-row:has-text("Czas na przygotowanie")');
+      const prepSteps = page.locator('#planList .step-row:has-text("Przygotowanie")');
       const count = await prepSteps.count();
       // Should have at least some prep steps with correct name
       expect(count).toBeGreaterThanOrEqual(0);

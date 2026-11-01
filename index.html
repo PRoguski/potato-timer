@@ -137,6 +137,10 @@
   #planSelector label{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--muted)}
   #planSelector input[type="radio"]{cursor:pointer;accent-color:var(--work)}
   #planSelector .plan-info{font-size:.8rem;color:var(--muted);opacity:.8}
+  #builderLink{
+    display:block;padding:10px 16px;background:var(--panel);text-align:center;
+    color:var(--muted);font-size:.85rem;font-weight:700;text-decoration:none;
+  }
 </style>
 </head>
 <body>
@@ -166,6 +170,7 @@
 <div id="planSelector">
   <!-- Opcje planów będą wstawiane dynamicznie -->
 </div>
+<a id="builderLink" href="builder.html">✎ Kreator treningu</a>
 
 <div id="resumeOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;justify-content:center;align-items:center;flex-direction:column">
   <div id="resumePanel" style="background:var(--panel);padding:24px;border-radius:14px;max-width:90%;text-align:center">

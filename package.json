@@ -4,8 +4,8 @@
   "description": "Potato Timer - Workout interval training application",
   "main": "index.html",
   "scripts": {
-    "start": "live-server --port=8080 --open=index.html",
-    "dev": "live-server --port=8080 --open=index.html",
+    "start": "live-server --port=8080 --open=index.html --ignore=test-results,playwright-report,.idea,node_modules,.git",
+    "dev": "live-server --port=8080 --open=index.html --ignore=test-results,playwright-report,.idea,node_modules,.git",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
