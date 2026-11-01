@@ -235,10 +235,17 @@ function render(){
     barEl.style.width='100%';
   }else{
     clockEl.textContent=fmt(remaining);
-    const upcoming=nextExercises(2);
-    nextEl.innerHTML = upcoming.length
-      ? 'Następnie: '+upcoming.map(s=>'<b>'+s.name+'</b>').join(' → ')
-      : 'To ostatni element 💪';
+    const upcoming=nextExercises(4);
+    nextEl.textContent = '';
+    if(upcoming.length){
+      upcoming.forEach(s=>{
+        const line=document.createElement('div');
+        line.textContent=s.name;
+        nextEl.appendChild(line);
+      });
+    }else{
+      nextEl.textContent='To ostatni element 💪';
+    }
     barEl.style.width = (total>0) ? (100*(total-remaining)/total)+'%' : '100%';
   }
 
