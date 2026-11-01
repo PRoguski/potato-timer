@@ -682,4 +682,87 @@ function showResumeDialog(state){
 }
 
 // Załaduj plan z pliku JSON i inicjuj aplikację
+
+// Fullscreen button toggle
+function initFullscreenBtn(){
+  const fullscreenBtn = $('fullscreenBtn');
+  
+  // Check if Fullscreen API is supported
+  const isFullscreenSupported = () => {
+    return document.documentElement.requestFullscreen ||
+           document.documentElement.webkitRequestFullscreen ||
+           document.documentElement.mozRequestFullScreen ||
+           document.documentElement.msRequestFullscreen;
+  };
+  
+  // If not supported, hide the button
+  if(!isFullscreenSupported()){
+    fullscreenBtn.style.display = 'none';
+    return;
+  }
+  
+  // Show the button
+  fullscreenBtn.style.display = '';
+  
+  // Helper to get current fullscreen element
+  const getFullscreenElement = () => {
+    return document.fullscreenElement ||
+           document.webkitFullscreenElement ||
+           document.mozFullScreenElement ||
+           document.msFullscreenElement;
+  };
+  
+  // Helper to request fullscreen
+  const requestFullscreen = (el) => {
+    if(el.requestFullscreen) return el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+    else if(el.mozRequestFullScreen) return el.mozRequestFullScreen();
+    else if(el.msRequestFullscreen) return el.msRequestFullscreen();
+  };
+  
+  // Helper to exit fullscreen
+  const exitFullscreen = () => {
+    if(document.exitFullscreen) return document.exitFullscreen();
+    else if(document.webkitExitFullscreen) return document.webkitExitFullscreen();
+    else if(document.mozCancelFullScreen) return document.mozCancelFullScreen();
+    else if(document.msExitFullscreen) return document.msExitFullscreen();
+  };
+  
+  // Update button state
+  const updateButtonState = () => {
+    const isFullscreen = !!getFullscreenElement();
+    // SVG icons: expand (enter fullscreen) vs collapse (exit fullscreen)
+    const expandSvg = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:1.2rem;height:1.2rem"><path d="M5 5h5v2H7v3H5V5zm9 0h5v5h-2V7h-3V5zm3 9h2v3h3v2h-5v-5zM5 14v5h5v-2H7v-3H5z"/></svg>';
+    const collapseSvg = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:1.2rem;height:1.2rem"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zm0-13v2h3v3h2V5h-5z"/></svg>';
+    fullscreenBtn.innerHTML = isFullscreen ? collapseSvg : expandSvg;
+    fullscreenBtn.setAttribute('aria-label', isFullscreen ? 'Zamknij pełny ekran' : 'Pełny ekran');
+    fullscreenBtn.setAttribute('title', isFullscreen ? 'Zamknij pełny ekran' : 'Pełny ekran');
+  };
+  
+  // Toggle fullscreen on button click
+  fullscreenBtn.onclick = (e) => {
+    e.stopPropagation();
+    if(!getFullscreenElement()){
+      requestFullscreen(document.documentElement).catch(err => {
+        console.error('Fullscreen request failed:', err);
+      });
+    }else{
+      exitFullscreen().catch(err => {
+        console.error('Exit fullscreen failed:', err);
+      });
+    }
+  };
+  
+  // Listen for fullscreen change events
+  document.addEventListener('fullscreenchange', updateButtonState);
+  document.addEventListener('webkitfullscreenchange', updateButtonState);
+  document.addEventListener('mozfullscreenchange', updateButtonState);
+  document.addEventListener('msfullscreenchange', updateButtonState);
+  
+  // Set initial state
+  updateButtonState();
+}
+
+// Call init function
+initFullscreenBtn();
 initializePlanSelector();
