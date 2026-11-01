@@ -143,6 +143,9 @@
   }
   #planSelector label{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--muted)}
   #planSelector input[type="radio"]{cursor:pointer;accent-color:var(--work)}
+  /* w trakcie treningu (nie pauzy) nie pokazuj innych planów ani linku do kreatora */
+  body.running #planSelector,
+  body.running #builderLink{display:none}
   #planSelector .plan-info{font-size:.8rem;color:var(--muted);opacity:.8}
   #builderLink{
     display:block;padding:10px 16px;background:var(--panel);text-align:center;

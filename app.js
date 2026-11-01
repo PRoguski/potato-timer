@@ -295,11 +295,13 @@ function start(){
 
   beep(988,.12);
   running=true; startBtn.textContent='Pauza'; startBtn.classList.remove('primary');
+  document.body.classList.add('running'); // ukrywa wybór planu w trakcie treningu
   tick=setInterval(tickDown,1000);
   if(settings.wakeLock) requestWakeLock();
 }
 function pause(){
   running=false; startBtn.textContent='Wznów'; startBtn.classList.add('primary');
+  document.body.classList.remove('running');
   clearInterval(tick);
   releaseWakeLock();
 }
@@ -307,6 +309,7 @@ function toggle(){ running?pause():start(); }
 
 function finish(){
   clearInterval(tick); running=false;
+  document.body.classList.remove('running');
   releaseWakeLock();
   clearWorkoutState();
   stage.className='done';
