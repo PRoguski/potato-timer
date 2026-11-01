@@ -32,7 +32,7 @@ async function detectAvailablePlans(){
   // Spróbuj załadować plan-0, plan-1, plan-2, itd.
   for(let i = 0; i < 10; i++){
     try{
-      const response = await fetch(`plans/plan-${i}.json`);
+      const response = await fetch(`plans/plan-${i}.json`, { cache: 'no-cache' });
       if(response.ok){
         availablePlans.push(`plan-${i}`);
       }
@@ -53,7 +53,7 @@ async function loadPlanFromFile(planName){
       if(!custom) throw new Error('Custom plan not found');
       plan = custom.plan;
     }else{
-      const response = await fetch(`plans/${planName}.json`);
+      const response = await fetch(`plans/${planName}.json`, { cache: 'no-cache' });
       if(!response.ok) throw new Error('Plan not found');
       plan = await response.json();
     }

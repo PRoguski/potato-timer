@@ -153,8 +153,11 @@
     <button class="primary" id="saveTrainingBtn">💾 Zapisz</button>
     <button id="copyBtn">Kopiuj</button>
     <button id="downloadBtn">Pobierz</button>
+    <button id="importBtn">📂 Wczytaj plik</button>
     <button id="resetBtn">Wyczyść</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
   </div>
+  <p class="hint">Plik .json możesz też przeciągnąć na stronę.</p>
   <div class="toast" id="toast"></div>
   <details>
     <summary>Podgląd JSON</summary>
@@ -169,5 +172,6 @@
 </section>
 
 <script src="builder.js"></script>
+<script src="update.js"></script>
 </body>
 </html>

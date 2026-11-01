@@ -345,6 +345,90 @@ $('downloadBtn').onclick = () => {
   URL.revokeObjectURL(a.href);
 };
 
+// ----- Import pliku JSON -----
+const PREP_STEP_NAME = 'Przygotowanie 🧰'; // krok wstawiany przez timer (app.js)
+
+// Zamienia plan (format plans/plan-*.json) na stan kreatora.
+// ROZGRZEWKA / SCHŁODZENIE -> listy; każdy inny nagłówek -> runda.
+function planToState(plan, fileName){
+  if(!Array.isArray(plan)) throw new Error('Plik nie zawiera listy kroków');
+  const s = { fileName, warmup: [], cooldown: [], rounds: 0, rows: [], times: [], preps: [] };
+  const rounds = [];     // rounds[r] = [{ name, t, prep }]
+  let section = null;    // 'warmup' | 'cooldown' | 'round'
+  let pendingPrep = false;
+  let skipped = 0;
+
+  plan.forEach(p => {
+    if(!p || typeof p !== 'object') return;
+    if(p.type === 'head'){
+      const name = String(p.name || '').trim().toUpperCase();
+      if(name === 'ROZGRZEWKA') section = 'warmup';
+      else if(name === 'SCHŁODZENIE') section = 'cooldown';
+      else { section = 'round'; rounds.push([]); }
+      pendingPrep = false;
+      return;
+    }
+    const name = String(p.name || '').trim();
+    if(p.type === 'rest') return; // przerwy bierze timer z ustawień
+    if(p.type === 'prep' && name === PREP_STEP_NAME){ pendingPrep = true; return; }
+    if(p.type === 'prep' && (section === 'warmup' || section === 'cooldown' || !section)){
+      s[section === 'cooldown' ? 'cooldown' : 'warmup'].push({ name, sec: snapTime(p.t) || TIME_STEP });
+      return;
+    }
+    if(p.type === 'work' || p.type === 'prep'){
+      if(!rounds.length) rounds.push([]);
+      rounds[rounds.length - 1].push({
+        name,
+        t: p.fixed ? snapTime(p.t) : 0,
+        prep: typeof p.prep === 'boolean' ? p.prep : pendingPrep
+      });
+      pendingPrep = false;
+      return;
+    }
+    skipped++; // np. kroki typu input — kreator ich nie obsługuje
+  });
+
+  const used = rounds.filter(r => r.length);
+  s.rounds = Math.max(1, used.length);
+  const rowCount = Math.max(1, ...used.map(r => r.length));
+  for(let i = 0; i < rowCount; i++){
+    s.rows.push(used.map(r => r[i] ? r[i].name : ''));
+    s.times.push(used.map(r => r[i] && r[i].t ? String(r[i].t) : ''));
+    s.preps.push(used.map(r => !!(r[i] && r[i].prep)));
+  }
+  return { state: normalizeState(s), skipped };
+}
+
+function importFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      // Akceptuj też zapis w formacie { plan, state } (jak w localStorage)
+      const plan = Array.isArray(data) ? data : data && data.plan;
+      const name = file.name.replace(/\.json$/i, '');
+      const { state: imported, skipped } = planToState(plan, name);
+      if(!confirm(`Wczytać „${name}"? Obecna zawartość kreatora zostanie zastąpiona.`)) return;
+      state = imported;
+      renderAll();
+      toast(`Wczytano „${name}"` + (skipped ? ` (pominięto kroków: ${skipped})` : '') + ' — kliknij 💾 Zapisz, żeby dodać do timera');
+    }catch(e){
+      toast('Nie udało się wczytać pliku: ' + e.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').onchange = e => { importFile(e.target.files[0]); e.target.value = ''; };
+document.addEventListener('dragover', e => { e.preventDefault(); });
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer && e.dataTransfer.files[0];
+  if(file) importFile(file);
+});
+
 $('resetBtn').onclick = () => {
   if(!confirm('Wyczyścić kreator?')) return;
   state = defaultState();

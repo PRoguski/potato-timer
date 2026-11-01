@@ -33,6 +33,13 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Stamp build version (cache busting)
+        run: |
+          V="${GITHUB_SHA::8}"
+          sed -i "s/__APP_VERSION__/$V/g" update.js sw.js
+          echo "{\"version\":\"$V\"}" > version.json
+          sed -i -E "s#src=\"(app|builder|update)\.js\"#src=\"\1.js?v=$V\"#g" index.html builder.html
+          grep -n "?v=" index.html builder.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
