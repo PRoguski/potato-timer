@@ -217,15 +217,9 @@ function beep(freq=880,dur=0.15){
   }catch(e){}
 }
 
-// Kolejne ćwiczenia (bez przerw i automatycznego przygotowania)
+// Kolejne kroki planu (razem z przerwami i przygotowaniem)
 function nextExercises(count){
-  const out=[];
-  for(let i=idx+1;i<steps.length && out.length<count;i++){
-    const s=steps[i];
-    if(s.type==='rest' || s.type==='input' || s.name===PREP_STEP_NAME) continue;
-    out.push(s);
-  }
-  return out;
+  return steps.slice(idx+1, idx+1+count);
 }
 
 function render(){
