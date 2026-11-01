@@ -217,6 +217,17 @@ function beep(freq=880,dur=0.15){
   }catch(e){}
 }
 
+// Kolejne ćwiczenia (bez przerw i automatycznego przygotowania)
+function nextExercises(count){
+  const out=[];
+  for(let i=idx+1;i<steps.length && out.length<count;i++){
+    const s=steps[i];
+    if(s.type==='rest' || s.type==='input' || s.name===PREP_STEP_NAME) continue;
+    out.push(s);
+  }
+  return out;
+}
+
 function render(){
   const step=steps[idx];
   stage.className=step.type;
@@ -230,8 +241,10 @@ function render(){
     barEl.style.width='100%';
   }else{
     clockEl.textContent=fmt(remaining);
-    const nxt=steps[idx+1];
-    nextEl.innerHTML = nxt ? 'Następnie: <b>'+nxt.name+'</b>' : 'To ostatni element 💪';
+    const upcoming=nextExercises(2);
+    nextEl.innerHTML = upcoming.length
+      ? 'Następnie: '+upcoming.map(s=>'<b>'+s.name+'</b>').join(' → ')
+      : 'To ostatni element 💪';
     barEl.style.width = (total>0) ? (100*(total-remaining)/total)+'%' : '100%';
   }
 
