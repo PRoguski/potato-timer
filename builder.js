@@ -3,28 +3,92 @@
 // w JSON-ie wpisujemy tylko wartości domyślne.
 
 const STORAGE_KEY = 'builderDraft';
+const CUSTOM_KEY = 'customTrainings'; // zapisane treningi, czytane też przez timer (app.js)
+const THEME_KEY = 'theme';
 const DEFAULT_WORK = 60;
 const DEFAULT_REST = 30;
+const TIME_STEP = 30; // rozdzielczość własnego czasu ćwiczenia (sekundy)
+
+// Zaokrągla do wielokrotności TIME_STEP (min. TIME_STEP); 0 = brak własnego czasu
+function snapTime(v){
+  const n = parseInt(v, 10);
+  if(!(n > 0)) return 0;
+  return Math.max(TIME_STEP, Math.round(n / TIME_STEP) * TIME_STEP);
+}
+
+// ----- Zapisane treningi (localStorage['customTrainings']) -----
+function loadCustomTrainings(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(CUSTOM_KEY));
+    return (raw && typeof raw === 'object') ? raw : {};
+  }catch(e){ return {}; }
+}
+
+function saveCustomTrainings(map){
+  try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(map)); }catch(e){}
+}
+
+// ----- Motyw jasny/ciemny -----
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if(btn) btn.textContent = theme === 'light' ? '🌙' : '☀️';
+}
+
+function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY);
+  const preferred = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  applyTheme(preferred);
+}
+
+function toggleTheme(){
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const next = current === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+}
+
+initTheme();
 
 function defaultState(){
   return {
     fileName: 'plan-5',
     warmup: [
-      { name: 'Skakanka spokojnie', min: 2 },
-      { name: 'Krążenia ramion, bioder, przysiady', min: 3 }
+      { name: 'Skakanka spokojnie', sec: 120 },
+      { name: 'Krążenia ramion, bioder, przysiady', sec: 180 }
     ],
     rounds: 1,
     rows: [['']],              // rows[wiersz][runda] = nazwa ćwiczenia
+    times: [[]],               // times[wiersz][runda] = własny czas w sekundach (puste = z ustawień timera)
+    preps: [[]],               // preps[wiersz][runda] = true -> przygotowanie 🧰 przed ćwiczeniem
     cooldown: [
-      { name: 'Rozciąganie', min: 5 }
+      { name: 'Rozciąganie', sec: 300 }
     ]
   };
 }
 
+// Uzupełnia brakujące pola w starszych szkicach/zapisach
+function normalizeState(s){
+  // Starsze szkice trzymały rozgrzewkę/schłodzenie w minutach (pole min) — przelicz na sekundy
+  [s.warmup, s.cooldown].forEach(list => (list || []).forEach(it => {
+    if(it.sec == null) it.sec = snapTime((+it.min || 0) * 60);
+    delete it.min;
+  }));
+  ['times', 'preps'].forEach(key => {
+    if(!Array.isArray(s[key])) s[key] = [];
+    s.rows.forEach((_, i) => { if(!Array.isArray(s[key][i])) s[key][i] = []; });
+    s[key].length = s.rows.length;
+  });
+  return s;
+}
+
+// Tablice równoległe do rows — muszą być zmieniane razem z wierszami/rundami
+const CELL_ARRAYS = ['rows', 'times', 'preps'];
+
 function loadState(){
   try{
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(saved && Array.isArray(saved.rows)) return saved;
+    if(saved && Array.isArray(saved.rows)) return normalizeState(saved);
   }catch(e){}
   return defaultState();
 }
@@ -40,7 +104,7 @@ function buildPlanJson(s){
   const out = [];
   const prepItems = list => list
     .filter(it => it.name.trim())
-    .map(it => ({ type: 'prep', name: it.name.trim(), t: Math.max(0, Math.round((+it.min || 0) * 60)) }));
+    .map(it => ({ type: 'prep', name: it.name.trim(), t: snapTime(it.sec) }));
 
   const warm = prepItems(s.warmup);
   if(warm.length){
@@ -50,11 +114,19 @@ function buildPlanJson(s){
 
   let roundNo = 0;
   for(let r = 0; r < s.rounds; r++){
-    const names = s.rows.map(row => (row[r] || '').trim()).filter(Boolean);
-    if(!names.length) continue;
+    const items = s.rows
+      .map((row, i) => ({
+        name: (row[r] || '').trim(),
+        t: snapTime((s.times && s.times[i] || [])[r]),
+        prep: !!(s.preps && s.preps[i] || [])[r]
+      }))
+      .filter(it => it.name);
+    if(!items.length) continue;
     out.push({ type: 'head', name: 'RUNDA ' + (++roundNo) });
-    names.forEach(name => {
-      out.push({ type: 'work', name, t: DEFAULT_WORK });
+    items.forEach(({ name, t, prep }) => {
+      // Własny czas -> fixed: true, timer go nie nadpisuje; brak -> czas z ustawień (⚙)
+      // prep: true -> timer wstawi "Przygotowanie 🧰" przed ćwiczeniem
+      out.push(t > 0 ? { type: 'work', name, t, fixed: true, prep } : { type: 'work', name, t: DEFAULT_WORK, prep });
       out.push({ type: 'rest', name: 'Przerwa', t: DEFAULT_REST });
     });
   }
@@ -82,16 +154,19 @@ function el(tag, props = {}, children = []){
 function renderList(containerId, list){
   const box = $(containerId);
   box.innerHTML = '';
+  const itemClass = containerId === 'warmupList' ? 'warmup' : 'cooldown';
   list.forEach((it, i) => {
     const name = el('input', { type: 'text', value: it.name, placeholder: 'Nazwa' });
     name.oninput = () => { it.name = name.value; changed(); };
-    const min = el('input', { type: 'number', value: it.min, min: 0, step: 0.5 });
-    min.setAttribute('aria-label', 'Minuty');
-    min.oninput = () => { it.min = parseFloat(min.value) || 0; changed(); };
+    const sec = el('input', { type: 'number', value: it.sec, min: TIME_STEP, step: TIME_STEP });
+    sec.setAttribute('aria-label', 'Sekundy');
+    sec.oninput = () => { it.sec = parseInt(sec.value, 10) || 0; changed(); };
+    // Po wyjściu z pola dociągnij do wielokrotności 30 s
+    sec.onchange = () => { it.sec = snapTime(sec.value); sec.value = it.sec || ''; changed(); };
     const del = el('button', { className: 'del', textContent: '✕', title: 'Usuń' });
     del.onclick = () => { list.splice(i, 1); renderAll(); };
-    box.appendChild(el('div', { className: 'item' }, [
-      name, min, el('span', { className: 'unit', textContent: 'min' }), del
+    box.appendChild(el('div', { className: `item ${itemClass}` }, [
+      name, sec, el('span', { className: 'unit', textContent: 'sek.' }), del
     ]));
   });
 }
@@ -121,10 +196,33 @@ function renderTable(){
       const input = el('input', { type: 'text', value: row[r] || '', placeholder: 'Ćwiczenie' });
       input.setAttribute('aria-label', `Runda ${r + 1}, ćwiczenie ${i + 1}`);
       input.oninput = () => { row[r] = input.value; changed(); };
-      tr.appendChild(el('td', {}, [input]));
+      const times = state.times[i];
+      const time = el('input', { type: 'number', className: 'sec', value: times[r] || '', min: TIME_STEP, step: TIME_STEP, placeholder: '⚙' });
+      time.setAttribute('aria-label', `Runda ${r + 1}, czas ćwiczenia ${i + 1} (sekundy)`);
+      time.title = 'Czas w sekundach — puste: czas z ustawień timera';
+      time.oninput = () => { times[r] = time.value; changed(); };
+      // Po wyjściu z pola dociągnij wpisaną wartość do wielokrotności 30 s
+      time.onchange = () => {
+        const v = snapTime(time.value);
+        times[r] = v ? String(v) : '';
+        time.value = times[r];
+        changed();
+      };
+      const unit = el('span', { className: 'unit', textContent: 'sek.' });
+      const preps = state.preps[i];
+      const prep = el('input', { type: 'checkbox', checked: !!preps[r] });
+      prep.setAttribute('aria-label', `Runda ${r + 1}, przygotowanie przed ćwiczeniem ${i + 1}`);
+      prep.onchange = () => { preps[r] = prep.checked; changed(); };
+      const prepLabel = el('label', { className: 'prep', title: 'Przygotowanie przed ćwiczeniem' },
+        [prep, el('span', { textContent: '🧰' })]);
+      tr.appendChild(el('td', {}, [el('div', { className: 'cell' }, [input, time, unit, prepLabel])]));
     }
     const del = el('button', { className: 'del', textContent: '✕', title: 'Usuń ćwiczenie' });
-    del.onclick = () => { state.rows.splice(i, 1); if(!state.rows.length) state.rows.push([]); renderAll(); };
+    del.onclick = () => {
+      CELL_ARRAYS.forEach(key => state[key].splice(i, 1));
+      if(!state.rows.length) CELL_ARRAYS.forEach(key => state[key].push([]));
+      renderAll();
+    };
     tr.appendChild(el('td', {}, [del]));
     body.appendChild(tr);
   });
@@ -132,7 +230,7 @@ function renderTable(){
 }
 
 function removeRound(r){
-  state.rows.forEach(row => row.splice(r, 1));
+  CELL_ARRAYS.forEach(key => state[key].forEach(cells => cells.splice(r, 1)));
   state.rounds--;
   renderAll();
 }
@@ -152,12 +250,45 @@ function changed(){
   saveState();
 }
 
+function renderSavedList(){
+  const box = $('savedList');
+  const map = loadCustomTrainings();
+  const names = Object.keys(map);
+  box.innerHTML = '';
+  if(!names.length){
+    box.appendChild(el('p', { className: 'hint', textContent: 'Brak zapisanych treningów.' }));
+    return;
+  }
+  names.forEach(name => {
+    const info = map[name];
+    const count = (info.plan || []).filter(p => p.type === 'work').length;
+    const load = el('button', { textContent: '↩ Wczytaj' });
+    load.onclick = () => {
+      state = normalizeState(JSON.parse(JSON.stringify(info.state)));
+      renderAll();
+      toast(`Wczytano „${name}"`);
+    };
+    const del = el('button', { className: 'del', textContent: '✕', title: 'Usuń trening' });
+    del.onclick = () => {
+      if(!confirm(`Usunąć zapisany trening „${name}"?`)) return;
+      delete map[name];
+      saveCustomTrainings(map);
+      renderSavedList();
+    };
+    box.appendChild(el('div', { className: 'item saved' }, [
+      el('span', { className: 'saved-name', textContent: `${name} (${count} ćw.)` }),
+      el('div', { style: 'display:flex;gap:8px' }, [load, del])
+    ]));
+  });
+}
+
 function renderAll(){
   $('fileName').value = state.fileName;
   renderList('warmupList', state.warmup);
   renderList('cooldownList', state.cooldown);
   renderTable();
   changed();
+  renderSavedList();
 }
 
 function toast(msg){
@@ -167,17 +298,32 @@ function toast(msg){
 }
 
 // ----- Przyciski -----
-$('addWarmup').onclick = () => { state.warmup.push({ name: '', min: 1 }); renderAll(); };
-$('addCooldown').onclick = () => { state.cooldown.push({ name: '', min: 1 }); renderAll(); };
-$('addRow').onclick = () => { state.rows.push([]); renderAll(); };
+$('addWarmup').onclick = () => { state.warmup.push({ name: '', sec: 60 }); renderAll(); };
+$('addCooldown').onclick = () => { state.cooldown.push({ name: '', sec: 60 }); renderAll(); };
+$('addRow').onclick = () => { CELL_ARRAYS.forEach(key => state[key].push([])); renderAll(); };
 $('addRound').onclick = () => {
   // Nowa runda startuje jako kopia poprzedniej — zwykle zmienia się tylko kilka ćwiczeń
   const last = state.rounds - 1;
   state.rows.forEach(row => { row[state.rounds] = row[last] || ''; });
+  state.times.forEach(t => { t[state.rounds] = t[last] || ''; });
+  state.preps.forEach(p => { p[state.rounds] = !!p[last]; });
   state.rounds++;
   renderAll();
 };
 $('fileName').oninput = e => { state.fileName = e.target.value; saveState(); };
+$('themeToggle').onclick = toggleTheme;
+
+$('saveTrainingBtn').onclick = () => {
+  const name = state.fileName.trim();
+  if(!name){ toast('Wpisz nazwę pliku, żeby zapisać trening'); return; }
+  const plan = buildPlanJson(state);
+  if(!plan.some(p => p.type === 'work')){ toast('Dodaj przynajmniej jedno ćwiczenie'); return; }
+  const map = loadCustomTrainings();
+  map[name] = { plan, state: JSON.parse(JSON.stringify(state)) };
+  saveCustomTrainings(map);
+  renderSavedList();
+  toast(`Zapisano „${name}" — dostępny w timerze`);
+};
 
 $('copyBtn').onclick = async () => {
   const text = $('output').value;

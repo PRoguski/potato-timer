@@ -16,6 +16,23 @@
     --prep:#f4a742;
     --danger:#f87171;
   }
+  :root[data-theme="light"]{
+    --bg:#f5f6f8;
+    --panel:#ffffff;
+    --line:#dde2e8;
+    --text:#14181f;
+    --muted:#687280;
+    --work:#5c9a00;
+    --work-ink:#ffffff;
+    --prep:#c9780a;
+    --danger:#d63a3a;
+  }
+  html{background:var(--bg)}
+  body{transition:background .2s ease,color .2s ease}
+  #themeToggle{
+    border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:1rem;
+    background:var(--bg);color:var(--text);cursor:pointer;line-height:1;
+  }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   body{
@@ -34,34 +51,54 @@
   input[type="text"],input[type="number"]{
     width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);
     border-radius:8px;padding:10px;font:inherit;font-size:.95rem;
+    transition:border-color .15s ease;
   }
-  input:focus{outline:2px solid var(--work);outline-offset:-1px}
+  input:hover{border-color:var(--muted)}
+  input:focus{outline:2px solid var(--work);outline-offset:2px;border-color:var(--work)}
   input[type="number"]{width:72px;text-align:center}
 
   button{
     border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;
     font-size:.9rem;color:var(--text);background:var(--bg);cursor:pointer;
+    transition:background .15s ease,border-color .15s ease,color .15s ease,transform .08s ease;
   }
+  button:hover{background:var(--line)}
+  button:focus{outline:2px solid var(--work);outline-offset:2px}
   button:active{transform:scale(.97)}
   button.primary{background:var(--work);color:var(--work-ink);border-color:var(--work)}
+  button.primary:hover{filter:brightness(1.15)}
   button.del{color:var(--danger);padding:6px 10px;background:transparent;border-color:transparent;font-size:1rem}
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 
   /* Listy rozgrzewki / schłodzenia */
   .item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .item.warmup,.item.cooldown{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
   .item .unit{color:var(--muted);font-size:.85rem}
+  .item .saved-name{flex:1;font-size:.9rem}
+  .item.saved{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;justify-content:space-between}
 
   /* Tabela rund */
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   table{border-collapse:collapse;min-width:100%}
-  th,td{padding:4px;text-align:left;vertical-align:middle}
-  th{font-size:.8rem;color:var(--work);letter-spacing:.06em;white-space:nowrap}
+  th,td{padding:6px 4px;text-align:left;vertical-align:middle}
+  th{font-size:.8rem;color:var(--work);letter-spacing:.06em;white-space:nowrap;border-bottom:1px solid var(--line)}
   th .del{font-size:.85rem}
   td.idx{color:var(--muted);font-weight:700;font-size:.85rem;text-align:right;padding-right:8px}
   td input{min-width:150px}
+  td .cell{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  td input.sec{min-width:0;width:64px;padding:10px 4px}
+  td .cell .unit{color:var(--muted);font-size:.8rem;white-space:nowrap}
+  td .cell label.prep{display:flex;align-items:center;gap:2px;cursor:pointer;white-space:nowrap}
+  td .cell label.prep input{margin:0;accent-color:var(--work);cursor:pointer;width:18px;height:18px}
 
-  .summary{color:var(--muted);font-size:.85rem;margin-top:10px}
+  .summary{color:var(--muted);font-size:.85rem;margin-top:12px;padding:10px;background:var(--bg);border-radius:8px}
   .summary b{color:var(--text)}
+
+  details{margin:10px 0}
+  details summary{cursor:pointer;padding:8px 0;color:var(--muted);font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:6px;user-select:none}
+  details summary:hover{color:var(--text)}
+  details[open] summary{margin-bottom:10px}
+  details > *:not(summary){margin-left:0}
 
   textarea{
     width:100%;min-height:220px;background:var(--bg);color:var(--text);border:1px solid var(--line);
@@ -76,8 +113,16 @@
 
 <header>
   <h1>Kreator treningu</h1>
-  <a class="back" href="index.html">‹ Timer</a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="themeToggle" type="button" aria-label="Zmień motyw" title="Zmień motyw"></button>
+    <a class="back" href="index.html">‹ Timer</a>
+  </div>
 </header>
+
+<section>
+  <h2>Nazwa treningu</h2>
+  <input type="text" id="fileName" aria-label="Nazwa treningu" placeholder="np. Poniedziałek — siła">
+</section>
 
 <section>
   <h2>Rozgrzewka</h2>
@@ -87,7 +132,7 @@
 
 <section>
   <h2>Rundy</h2>
-  <p class="hint">Czas pracy i przerwy ustawiasz suwakami w timerze. Puste pola są pomijane.</p>
+  <p class="hint">Obok ćwiczenia możesz wpisać czas w sekundach. Puste pole czasu = czas pracy z ustawień timera (⚙). Zaznacz 🧰, jeśli przed ćwiczeniem potrzebujesz czasu na przygotowanie sprzętu lub pozycji (długość z ustawień timera). Przerwy zawsze bierze z ustawień. Puste ćwiczenia są pomijane.</p>
   <div class="table-wrap"><table id="roundsTable"></table></div>
   <div class="actions">
     <button id="addRow">+ ćwiczenie</button>
@@ -103,18 +148,24 @@
 </section>
 
 <section>
-  <h2>JSON</h2>
-  <div class="file">
-    <input type="text" id="fileName" aria-label="Nazwa pliku">
-    <span class="unit">.json</span>
-  </div>
+  <h2>Zapis i eksport</h2>
   <div class="actions">
-    <button class="primary" id="copyBtn">Kopiuj</button>
+    <button class="primary" id="saveTrainingBtn">💾 Zapisz</button>
+    <button id="copyBtn">Kopiuj</button>
     <button id="downloadBtn">Pobierz</button>
     <button id="resetBtn">Wyczyść</button>
   </div>
   <div class="toast" id="toast"></div>
-  <textarea id="output" readonly spellcheck="false"></textarea>
+  <details>
+    <summary>Podgląd JSON</summary>
+    <textarea id="output" readonly spellcheck="false"></textarea>
+  </details>
+</section>
+
+<section>
+  <h2>Zapisane treningi</h2>
+  <p class="hint">Zapisane tu treningi pojawią się automatycznie w selektorze planów na stronie timera.</p>
+  <div id="savedList"></div>
 </section>
 
 <script src="builder.js"></script>
