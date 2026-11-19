@@ -34,7 +34,7 @@
   /* ===== Ekran timera ===== */
   #stage{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:24px 20px;transition:background .35s ease;position:relative;
+    text-align:center;padding:60px 20px 24px;transition:background .35s ease;position:relative;
   }
   #stage.work{background:var(--train);color:var(--train-ink)}
   #stage.rest{background:var(--rest);color:var(--rest-ink)}
@@ -59,6 +59,8 @@
     position:absolute;left:0;top:0;height:5px;background:rgba(0,0,0,.28);
     width:0;transition:width .25s linear;
   }
+  .now{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 8px);left:50%;transform:translateX(-50%);
+    font-size:1.5rem;font-weight:800;line-height:44px;font-variant-numeric:tabular-nums;opacity:.8}
   .counter{position:absolute;top:14px;right:18px;font-size:.8rem;font-weight:700;opacity:.6}
 
   /* ===== Sterowanie ===== */
@@ -159,6 +161,7 @@
 
 <div id="stage" class="prep">
   <div class="progress" id="bar"></div>
+  <div class="now" id="now"></div>
   <div class="counter" id="counter"></div>
   <div class="phase" id="phase">Gotowy?</div>
   <img id="exerciseImage" src="" alt="" style="max-width:200px;max-height:200px;border-radius:10px;margin:16px 0;display:none;object-fit:cover">

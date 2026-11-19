@@ -174,6 +174,11 @@ function initApp(){
   remaining=steps[0].t;
   total=steps[0].t;
 
+  // Aktualna godzina na górze ekranu
+  const nowEl=$('now');
+  const showNow=()=>{const d=new Date();nowEl.textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+  showNow(); clearInterval(window._nowTick); window._nowTick=setInterval(showNow,1000);
+
   // Reszta inicjalizacji
   setupEventListeners();
   buildPlanList();
