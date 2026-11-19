@@ -557,6 +557,7 @@ test.describe('Timer Functionality', () => {
     test('should increment counter on step completion', async ({ page }) => {
       const counter = page.locator('#step');
       const nextBtn = page.locator('#nextBtn');
+      await expect(counter).toHaveText(/\d/); // plan załadowany
 
       const initialCounter = await counter.textContent();
       const initialNum = parseInt(initialCounter?.split('/')[0] || '0');

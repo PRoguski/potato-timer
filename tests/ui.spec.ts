@@ -55,6 +55,7 @@ test.describe('UI Layout & Display', () => {
     });
 
     test('should advance round counter and clear it in cool-down', async ({ page }) => {
+      test.setTimeout(90000); // ~70 kliknięć przez cały plan
       await expect(page.locator('#step')).toHaveText(/\d/); // plan załadowany
       const counter = page.locator('#counter');
       const nextBtn = page.locator('#nextBtn');
