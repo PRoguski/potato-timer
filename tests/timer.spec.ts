@@ -94,7 +94,7 @@ test.describe('Timer Functionality', () => {
 
     test('should transition to next step when time runs out', async ({ page }) => {
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Get initial counter
       const initialCounter = await counter.textContent();
@@ -318,7 +318,7 @@ test.describe('Timer Functionality', () => {
     test('should transition through entire workout sequence', async ({ page }) => {
       const phase = page.locator('#phase');
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Get initial counter
       const initialCounter = await counter.textContent();
@@ -396,7 +396,7 @@ test.describe('Timer Functionality', () => {
   test.describe('Navigation Between Steps', () => {
     test('should skip to next step with Next button', async ({ page }) => {
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       const initialCounter = await counter.textContent();
 
@@ -411,7 +411,7 @@ test.describe('Timer Functionality', () => {
     test('should go to previous step with Previous button', async ({ page }) => {
       const nextBtn = page.locator('#nextBtn');
       const prevBtn = page.locator('#prevBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Move to step 1
       await nextBtn.click();
@@ -451,7 +451,7 @@ test.describe('Timer Functionality', () => {
     test('should jump to previous step if at beginning of current', async ({ page }) => {
       const nextBtn = page.locator('#nextBtn');
       const prevBtn = page.locator('#prevBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Move forward 2 steps
       await nextBtn.click();
@@ -497,7 +497,7 @@ test.describe('Timer Functionality', () => {
       await planSummary.click();
       await page.waitForTimeout(200);
 
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const initialCounter = await counter.textContent();
 
       // Click on a plan list row (second row to jump to different step)
@@ -537,16 +537,15 @@ test.describe('Timer Functionality', () => {
   });
 
   test.describe('Step Counter', () => {
-    test('should display current step number', async ({ page }) => {
-      const counter = page.locator('#counter');
-      await expect(counter).toBeVisible();
+    test('should track current step number (hidden)', async ({ page }) => {
+      const counter = page.locator('#step');
       const text = await counter.textContent();
       // Should match format "N / Total"
       expect(text?.trim()).toMatch(/^\d+\s*\/\s*\d+$/);
     });
 
     test('should display total number of steps', async ({ page }) => {
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const text = await counter.textContent();
       // Extract the total (after /)
       const parts = text?.split('/');
@@ -556,7 +555,7 @@ test.describe('Timer Functionality', () => {
     });
 
     test('should increment counter on step completion', async ({ page }) => {
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const nextBtn = page.locator('#nextBtn');
 
       const initialCounter = await counter.textContent();
@@ -574,7 +573,7 @@ test.describe('Timer Functionality', () => {
     });
 
     test('should maintain correct count through full workout', async ({ page }) => {
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const nextBtn = page.locator('#nextBtn');
 
       // Get initial state
@@ -606,7 +605,7 @@ test.describe('Timer Functionality', () => {
 
   test.describe('Workout Completion', () => {
     test('should complete workout when all steps done', async ({ page }) => {
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const nextBtn = page.locator('#nextBtn');
 
       // Get total steps
@@ -642,7 +641,7 @@ test.describe('Timer Functionality', () => {
       const nextBtn = page.locator('#nextBtn');
 
       // Get to near end by skipping steps
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const counterText = await counter.textContent();
       const totalSteps = parseInt(counterText?.split('/')[1] || '0');
 
@@ -668,7 +667,7 @@ test.describe('Timer Functionality', () => {
       const nextBtn = page.locator('#nextBtn');
 
       // Skip through all steps
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       for (let i = 0; i < 100; i++) {
         const counterText = await counter.textContent();
         const currentStep = parseInt(counterText?.split('/')[0] || '0');
@@ -690,7 +689,7 @@ test.describe('Timer Functionality', () => {
       const nextBtn = page.locator('#nextBtn');
 
       // Skip to end
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       for (let i = 0; i < 100; i++) {
         const counterText = await counter.textContent();
         const currentStep = parseInt(counterText?.split('/')[0] || '0');
@@ -710,7 +709,7 @@ test.describe('Timer Functionality', () => {
     test('should show "Od nowa" on button after completion', async ({ page }) => {
       const startBtn = page.locator('#startBtn');
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Skip through all steps
       for (let i = 0; i < 100; i++) {
@@ -732,7 +731,7 @@ test.describe('Timer Functionality', () => {
     test('should allow restart after completion', async ({ page }) => {
       const startBtn = page.locator('#startBtn');
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Skip to end
       for (let i = 0; i < 100; i++) {
@@ -801,7 +800,7 @@ test.describe('Timer Functionality', () => {
     test('should show 00:00 when workout complete', async ({ page }) => {
       const remainingTime = page.locator('#remainingTime');
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Skip to end of workout
       for (let i = 0; i < 100; i++) {

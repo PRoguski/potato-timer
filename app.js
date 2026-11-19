@@ -161,7 +161,7 @@ let idx=0, remaining=0, total=0, tick=null, running=false;
 
 function initApp(){
   // Tylko kroki z czasem biorą udział w odliczaniu
-  steps = plan.filter(p => p.type !== 'head');
+  steps = planSteps(plan);
 
   // Inicjuj DOM elements
   stage=$('stage'); phaseEl=$('phase'); exEl=$('exercise');
@@ -234,6 +234,32 @@ function beep(freq=880,dur=0.15){
   }catch(e){}
 }
 
+// Kroki z czasem (bez nagłówków). Każdy krok dostaje numer rundy:
+// runda = sekcja (nagłówek) zawierająca co najmniej jedno ćwiczenie.
+// Rozgrzewka i schłodzenie nie są rundami (round = 0).
+let roundsTotal = 0;
+function planSteps(src){
+  const sections=[]; let cur=null;
+  src.forEach(p=>{
+    if(p.type==='head'){ cur={steps:[]}; sections.push(cur); return; }
+    if(!cur){ cur={steps:[]}; sections.push(cur); }
+    cur.steps.push(p);
+  });
+  let n=0;
+  sections.forEach(sec=>{
+    const r = sec.steps.some(p=>p.type==='work') ? ++n : 0;
+    sec.steps.forEach(p=>{ p.round=r; });
+  });
+  // Przygotowanie dodane na końcu sekcji (po przerwie) należy już do następnej rundy
+  sections.forEach((sec,i)=>{
+    const next=sections[i+1]; if(!next) return;
+    const nr=next.steps.length ? next.steps[0].round : 0; if(!nr) return;
+    for(let k=sec.steps.length-1;k>=0 && sec.steps[k].type==='prep' && sec.steps[k].name===PREP_STEP_NAME;k--) sec.steps[k].round=nr;
+  });
+  roundsTotal=n;
+  return sections.flatMap(sec=>sec.steps);
+}
+
 // Kolejne kroki planu (razem z przerwami i przygotowaniem)
 function nextExercises(count){
   return steps.slice(idx+1, idx+1+count);
@@ -244,7 +270,8 @@ function render(){
   stage.className=step.type;
   phaseEl.textContent=phaseLabel[step.type]||'';
   exEl.textContent=step.name;
-  counterEl.textContent=(idx+1)+' / '+steps.length;
+  $('step').textContent=(idx+1)+' / '+steps.length;
+  counterEl.textContent = step.round ? 'Runda '+step.round+' / '+roundsTotal : '';
 
   if(step.type==='input'){
     clockEl.textContent='';
@@ -557,7 +584,7 @@ function updatePlan(){
   });
 
   // Aktualizuj steps array z nowym planem
-  steps = plan.filter(p => p.type !== 'head');
+  steps = planSteps(plan);
 
   // Przebuduj listę
   const listEl = $('planList');

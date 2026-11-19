@@ -40,11 +40,36 @@ test.describe('UI Layout & Display', () => {
       await expect(next).toBeVisible();
     });
 
-    test('should display counter (current / total)', async ({ page }) => {
+    test('should hide round counter during warm-up', async ({ page }) => {
+      await expect(page.locator('#step')).toHaveText(/\d/); // plan załadowany
+      await expect(page.locator('#counter')).toHaveText('');
+    });
+
+    test('should display round counter (current / total) during a round', async ({ page }) => {
+      await expect(page.locator('#step')).toHaveText(/\d/); // plan załadowany
       const counter = page.locator('#counter');
+      const nextBtn = page.locator('#nextBtn');
+      for (let i = 0; i < 20 && !(await counter.textContent()); i++) await nextBtn.click();
       await expect(counter).toBeVisible();
-      const text = await counter.textContent();
-      expect(text?.trim()).toMatch(/^\d+\s*\/\s*\d+$/);
+      await expect(counter).toHaveText(/^Runda 1 \/ \d+$/);
+    });
+
+    test('should advance round counter and clear it in cool-down', async ({ page }) => {
+      await expect(page.locator('#step')).toHaveText(/\d/); // plan załadowany
+      const counter = page.locator('#counter');
+      const nextBtn = page.locator('#nextBtn');
+      const seen: string[] = [];
+      for (let i = 0; i < 200 && !(await nextBtn.isDisabled()); i++) {
+        const t = (await counter.textContent()) || '';
+        if (seen[seen.length - 1] !== t) seen.push(t);
+        await nextBtn.click();
+      }
+      seen.push((await counter.textContent()) || '');
+      const rounds = seen.filter(t => t);
+      expect(rounds.length).toBeGreaterThan(0);
+      const total = parseInt(rounds[0].split('/')[1]);
+      expect(rounds).toEqual(Array.from({ length: total }, (_, i) => `Runda ${i + 1} / ${total}`));
+      expect(seen[seen.length - 1]).toBe('');
     });
 
     test('should display progress bar', async ({ page }) => {

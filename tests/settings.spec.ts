@@ -439,7 +439,7 @@ test.describe('Settings Panel', () => {
     test('should reset workout state on change', async ({ page }) => {
       const startBtn = page.locator('#startBtn');
       const settingsBtn = page.locator('#settingsBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Start workout
       await startBtn.click();
@@ -735,7 +735,7 @@ test.describe('Settings Panel', () => {
       await page.waitForTimeout(100);
 
       // Navigate to end of workout
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       for (let i = 0; i < 100; i++) {
         const counterText = await counter.textContent();
         const curStep = parseInt(counterText?.split('/')[0] || '0');
@@ -1008,7 +1008,7 @@ test.describe('Settings Panel', () => {
 
         // Should go back (equivalent to clicking previous)
         // Verify with counter or phase
-        const counter = page.locator('#counter');
+        const counter = page.locator('#step');
         const text = await counter.textContent();
         expect(text).toBeTruthy();
       }
@@ -1049,7 +1049,7 @@ test.describe('Settings Panel', () => {
 
     test('should enable clicking on stage right zone for next', async ({ page }) => {
       const settingsBtn = page.locator('#settingsBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Enable tap navigation
       await settingsBtn.click();
@@ -1081,7 +1081,7 @@ test.describe('Settings Panel', () => {
 
     test('should not enable tap navigation when toggle off', async ({ page }) => {
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
 
       // Ensure tap navigation is OFF
       const settingsBtn = page.locator('#settingsBtn');

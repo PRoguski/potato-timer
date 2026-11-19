@@ -224,9 +224,9 @@ test.describe('Audio & Sound Cues', () => {
 
   test.describe('Workout Completion Beep', () => {
     test('should play beep when workout completes', async ({ page }) => {
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const startBtn = page.locator('#startBtn');
-      await expect(counter).toBeVisible();
+      await expect(counter).toHaveText(/^\d+\s*\/\s*\d+$/);
     });
 
     test('should use 1319 Hz frequency (highest tone)', async ({ page }) => {

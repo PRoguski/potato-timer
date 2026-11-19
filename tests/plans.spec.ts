@@ -137,7 +137,7 @@ test.describe('Workout Plans', () => {
     });
 
     test('should not include section headers in step counter', async ({ page }) => {
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const text = await counter.textContent();
       const parts = text?.split('/');
       const currentStep = parseInt(parts?.[0] || '0');
@@ -202,7 +202,7 @@ test.describe('Workout Plans', () => {
       await page.waitForTimeout(200);
 
       // Navigate to near end of workout
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const nextBtn = page.locator('#nextBtn');
 
       for (let i = 0; i < 100; i++) {
@@ -378,7 +378,7 @@ test.describe('Workout Plans', () => {
 
     test('should reset to first step when changing plans', async ({ page }) => {
       const nextBtn = page.locator('#nextBtn');
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const plan1Radio = page.locator('input[name="plan"][value="1"]');
 
       // Navigate to step 5
@@ -566,7 +566,7 @@ test.describe('Workout Plans', () => {
       await summary.click();
       await page.waitForTimeout(200);
 
-      const counter = page.locator('#counter');
+      const counter = page.locator('#step');
       const initialCounter = await counter.textContent();
 
       // Click second step in list
