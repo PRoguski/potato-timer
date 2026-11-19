@@ -13,6 +13,8 @@
     --muted:#8b98a8;
     --work:#c6ff3d;      /* praca */
     --work-ink:#12200a;
+    --train:#e5322d;     /* tło ćwiczenia */
+    --train-ink:#ffffff;
     --rest:#38bdf8;      /* przerwa */
     --rest-ink:#04222f;
     --prep:#f4a742;      /* rozgrzewka/schłodzenie */
@@ -34,7 +36,7 @@
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;padding:24px 20px;transition:background .35s ease;position:relative;
   }
-  #stage.work{background:var(--work);color:var(--work-ink)}
+  #stage.work{background:var(--train);color:var(--train-ink)}
   #stage.rest{background:var(--rest);color:var(--rest-ink)}
   #stage.prep{background:var(--prep);color:var(--prep-ink)}
   #stage.input{background:var(--input);color:var(--input-ink);cursor:pointer}
@@ -89,7 +91,7 @@
   .row .dur{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
   .row.head .name{font-weight:800;color:var(--text);letter-spacing:.04em}
   .dot{width:8px;height:8px;border-radius:50%;flex:none}
-  .dot.work{background:var(--work)} .dot.rest{background:var(--rest)}
+  .dot.work{background:var(--train)} .dot.rest{background:var(--rest)}
   .dot.prep{background:var(--prep)} .dot.input{background:var(--input)} .dot.head{background:transparent}
 
   /* ===== Ustawienia ===== */
