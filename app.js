@@ -205,15 +205,27 @@ function calcRemainingTime(){
 }
 
 // prosty dźwięk (WebAudio, bez plików)
-let actx;
+// Fala prostokątna + pełna głośność + kompresor = dużo głośniej niż czysty sinus,
+// a kompresor pilnuje, żeby nie było przesterowania.
+let actx, aout;
 function beep(freq=880,dur=0.15){
   try{
-    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    if(!actx){
+      actx = new (window.AudioContext||window.webkitAudioContext)();
+      aout = actx.createDynamicsCompressor();
+      aout.threshold.value=-10; aout.knee.value=6; aout.ratio.value=8;
+      aout.attack.value=.002; aout.release.value=.1;
+      aout.connect(actx.destination);
+    }
+    if(actx.state==='suspended') actx.resume();
+    const t=actx.currentTime, d=Math.max(dur,.12);
     const o=actx.createOscillator(), g=actx.createGain();
-    o.frequency.value=freq; o.connect(g); g.connect(actx.destination);
-    g.gain.setValueAtTime(.18,actx.currentTime);
-    g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+dur);
-    o.start(); o.stop(actx.currentTime+dur);
+    o.type='square'; o.frequency.value=freq; o.connect(g); g.connect(aout);
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(1,t+.005);      // szybki atak
+    g.gain.setValueAtTime(1,t+d*.75);                   // trzymaj pełną głośność
+    g.gain.exponentialRampToValueAtTime(.0001,t+d);     // krótkie wygaszenie
+    o.start(t); o.stop(t+d+.02);
   }catch(e){}
 }
 
