@@ -178,7 +178,7 @@ let running = false;      // czy timer tyka
 
 - `#phase` — faza („Ćwiczenie", „Przerwa", „Rozgrzewka").
 - `#exercise` — nazwa ćwiczenia/aktywności.
-- `#clock` — czas MM:SS, monospace, duży font.
+- `#clock` — pozostałe sekundy (np. `90`), monospace, duży font.
 - `.progress` — pasek postępu (top, 5 px wysoki), `width` = `(total - remaining) / total * 100%`.
 - `.counter` — licznik „N / 48" (top-right).
 - `#next` — podpowiedź „Następnie: <b>…</b>".
@@ -231,11 +231,11 @@ Uruchom stronę → automatycznie wylicza długość (`steps.length`) i wstawia 
 - **Interfejs po polsku** — utrzymuj polski w UI i komunikatach (phase labels, przycisk, next text).
 - **Zero zależności** (Vanilla JS) — offline-first, brak npm w runtime.
 - **Kolory semantyczne**:
-  - Zielony = praca/wysiłek.
+  - Czerwony = praca/wysiłek (zielony zostaje jako akcent przycisków).
   - Niebieski = przerwa/regeneracja.
   - Pomarańczowy = rozgrzewka/schłodzenie.
   Nie mieszać — każda faza ma ustalone kolory.
-- **Format czasu**: `MM:SS` (tabular-nums, monospace).
+- **Format czasu**: zegar w głównym widoku pokazuje same sekundy (np. `90`); lista planu i czas pozostały — `MM:SS` (tabular-nums).
 - **Responsive**: `clamp()` dla font-size, `vw` dla skali, `env(safe-area-inset-*)` dla notch.
 
 ## Formatowanie czasu

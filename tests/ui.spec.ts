@@ -28,11 +28,11 @@ test.describe('UI Layout & Display', () => {
       expect(text?.trim().length).toBeGreaterThan(0);
     });
 
-    test('should display timer clock in MM:SS format', async ({ page }) => {
+    test('should display timer clock in seconds only', async ({ page }) => {
       const clock = page.locator('#clock');
       await expect(clock).toBeVisible();
       const text = await clock.textContent();
-      expect(text?.trim()).toMatch(/^\d{2}:\d{2}$/);
+      expect(text?.trim()).toMatch(/^\d+$/);
     });
 
     test('should display next exercise hint', async ({ page }) => {

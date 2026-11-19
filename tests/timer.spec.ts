@@ -11,15 +11,15 @@ test.describe('Timer Functionality', () => {
       const clock = page.locator('#clock');
       await expect(clock).toBeVisible();
       const text = await clock.textContent();
-      // Should show MM:SS format
-      expect(text?.trim()).toMatch(/^\d{2}:\d{2}$/);
+      // Should show seconds only
+      expect(text?.trim()).toMatch(/^\d+$/);
     });
 
-    test('should display time in MM:SS format', async ({ page }) => {
+    test('should display time in seconds only', async ({ page }) => {
       const clock = page.locator('#clock');
       const text = await clock.textContent();
-      // Verify format like "01:30" or "00:15"
-      expect(text?.trim()).toMatch(/^\d{2}:\d{2}$/);
+      // Verify format like "90" or "15"
+      expect(text?.trim()).toMatch(/^\d+$/);
     });
 
     test('should have tabular numbers for clock', async ({ page }) => {
@@ -65,9 +65,9 @@ test.describe('Timer Functionality', () => {
       await page.waitForTimeout(1100);
       const afterTwoSeconds = await clock.textContent();
 
-      // Both times should be in MM:SS format
-      expect(afterOneSecond?.trim()).toMatch(/^\d{2}:\d{2}$/);
-      expect(afterTwoSeconds?.trim()).toMatch(/^\d{2}:\d{2}$/);
+      // Both times should be in seconds-only format
+      expect(afterOneSecond?.trim()).toMatch(/^\d+$/);
+      expect(afterTwoSeconds?.trim()).toMatch(/^\d+$/);
       // Second time should be 1 second less
       expect(afterTwoSeconds).not.toBe(afterOneSecond);
     });

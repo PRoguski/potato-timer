@@ -246,7 +246,7 @@ function render(){
     nextEl.textContent='Kliknij aby kontynuować';
     barEl.style.width='100%';
   }else{
-    clockEl.textContent=fmt(remaining);
+    clockEl.textContent=String(remaining);
     const upcoming=nextExercises(4);
     nextEl.textContent = '';
     if(upcoming.length){
@@ -341,7 +341,7 @@ function finish(){
   stage.className='done';
   phaseEl.textContent='Koniec';
   exEl.textContent='Trening zaliczony 🎉';
-  clockEl.textContent='00:00';
+  clockEl.textContent='0';
   nextEl.textContent='Świetna robota. Rozciągnij się i napij wody.';
   barEl.style.width='100%';
   startBtn.textContent='Od nowa'; startBtn.classList.add('primary');
